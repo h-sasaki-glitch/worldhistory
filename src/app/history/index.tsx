@@ -4,12 +4,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/history/Screen';
 import { C, F, caps } from '@/components/history/theme';
 import { STAGES } from '@/history/data';
+import { currentStop, journey } from '@/history/stage/journey';
 import { useHistory } from '@/history/store/HistoryProvider';
 
 /** タイトル画面。説明は置かず、時代へ飛び込む入口だけを示す。 */
 export default function TitleScreen() {
   const { archive, stages } = useHistory();
-  const stage = STAGES[0];
+  const stage = currentStop(journey(STAGES, stages)).stage;
   const progress = stages[stage.id];
   const started = Object.values(progress.terms).some((t) => t.result !== null);
   const discovered = Object.keys(archive.entries).length;

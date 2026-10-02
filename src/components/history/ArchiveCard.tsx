@@ -15,10 +15,22 @@ type Props = {
   isDiscovered: (id: string) => boolean;
   onOpenTerm: (id: string) => void;
   onWikipedia?: () => void;
+  /** 時代をまたいで同じ概念でつながる用語（TIME LINK） */
+  acrossTime?: { termId: string; era: string }[];
 };
 
 /** ARCHIVE の記録カード（DISCOVERY 詳細） */
-export function ArchiveCard({ term, connections, found, total, termsById, isDiscovered, onOpenTerm, onWikipedia }: Props) {
+export function ArchiveCard({
+  term,
+  connections,
+  found,
+  total,
+  termsById,
+  isDiscovered,
+  onOpenTerm,
+  onWikipedia,
+  acrossTime = [],
+}: Props) {
   return (
     <View style={styles.card}>
       <Text style={styles.category}>{CATEGORY_LABEL_JA[term.category]}</Text>
@@ -55,6 +67,30 @@ export function ArchiveCard({ term, connections, found, total, termsById, isDisc
         </View>
       )}
 
+      {acrossTime.length > 0 && (
+        <View style={styles.links}>
+          <Text style={[styles.section, styles.sectionTime]}>ACROSS TIME</Text>
+          {acrossTime.map((x) => {
+            const open = isDiscovered(x.termId);
+            return (
+              <Pressable
+                key={x.termId}
+                disabled={!open}
+                onPress={() => onOpenTerm(x.termId)}
+                style={styles.linkRow}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.bullet, open && styles.bulletTime]}>◆</Text>
+                <Text style={[styles.linkName, !open && styles.linkDim]}>
+                  {open ? termsById[x.termId].display : '？？？'}
+                </Text>
+                <Text style={styles.era}>{x.era}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+
       {onWikipedia && (
         <Pressable onPress={onWikipedia} style={styles.wiki} accessibilityRole="link">
           <Text style={styles.wikiText}>Wikipediaで詳しく読む</Text>
@@ -85,6 +121,9 @@ const styles = StyleSheet.create({
   linkName: { fontFamily: F.ja, color: C.sand, fontSize: 15, flex: 1 },
   linkDim: { color: C.textFaint },
   chev: { color: C.gold, fontSize: 16 },
+  sectionTime: { color: '#9fb3e6' },
+  bulletTime: { color: '#9fb3e6' },
+  era: { ...caps, fontSize: 9, letterSpacing: 2, color: C.textDim },
   count: { ...caps, fontSize: 10, letterSpacing: 3, color: C.textDim, marginTop: 6 },
   wiki: {
     marginTop: 24,

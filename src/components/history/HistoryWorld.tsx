@@ -54,6 +54,7 @@ export function HistoryWorld(props: Props) {
               x={p.x}
               y={p.y}
               label={h.label}
+              worldWidth={size.w}
               found={props.backgroundDiscovered.includes(h.termId)}
               onPress={() => props.onHotspot(h.termId)}
             />
@@ -108,7 +109,28 @@ export function HistoryWorld(props: Props) {
   );
 }
 
-function Hotspot({ x, y, label, found, onPress }: { x: number; y: number; label: string; found: boolean; onPress: () => void }) {
+const LABEL_WIDTH = 120;
+
+function Hotspot({
+  x,
+  y,
+  label,
+  worldWidth,
+  found,
+  onPress,
+}: {
+  x: number;
+  y: number;
+  label: string;
+  worldWidth: number;
+  found: boolean;
+  onPress: () => void;
+}) {
+  // ラベルは画面端で切れないよう、世界の枠内に収める
+  const labelLeft = Math.min(
+    Math.max(-(LABEL_WIDTH - 44) / 2, 6 - (x - 22)),
+    worldWidth - 6 - (x - 22) - LABEL_WIDTH,
+  );
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (found) return;
@@ -141,7 +163,7 @@ function Hotspot({ x, y, label, found, onPress }: { x: number; y: number; label:
         />
       )}
       <View style={[styles.spark, found && styles.sparkFound]} />
-      {found && <Text style={styles.hotspotLabel}>{label}</Text>}
+      {found && <Text style={[styles.hotspotLabel, { left: labelLeft }]}>{label}</Text>}
     </Pressable>
   );
 }
@@ -252,7 +274,7 @@ const styles = StyleSheet.create({
   hotspotLabel: {
     position: 'absolute',
     top: 28,
-    width: 120,
+    width: LABEL_WIDTH,
     textAlign: 'center',
     ...caps,
     fontSize: 9,

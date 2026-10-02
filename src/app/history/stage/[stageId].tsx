@@ -278,7 +278,7 @@ function StageView({ stageId }: { stageId: string }) {
           <View style={styles.doneBar}>
             <Text style={styles.doneText}>この時代の言葉は、すべて記された。</Text>
             <View style={styles.doneActions}>
-              <Pressable onPress={() => router.push('/history/timeline')} style={styles.doneBtn}>
+              <Pressable onPress={() => router.dismissTo('/history/timeline')} style={styles.doneBtn}>
                 <Text style={styles.doneBtnText}>次の時代へ</Text>
               </Pressable>
               <Pressable
@@ -320,7 +320,7 @@ function StageView({ stageId }: { stageId: string }) {
           summary={summarizeStage(api.archive, stageId, TERMS_BY_ID)}
           onNext={() => {
             advance();
-            router.replace('/history/timeline');
+            router.dismissTo('/history/timeline');
           }}
           onArchive={() => router.push('/history/archive')}
         />

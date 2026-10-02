@@ -5,38 +5,39 @@ import { Screen } from '@/components/history/Screen';
 import { C, F, caps } from '@/components/history/theme';
 import { Timeline, type TimelineNode } from '@/components/history/Timeline';
 import { STAGES } from '@/history/data';
+import { journey } from '@/history/stage/journey';
 import { useHistory } from '@/history/store/HistoryProvider';
 
 /** タイムライン。実装済みの時代と、次の目的地（未実装）を並べる。 */
 export default function TimelineScreen() {
   const { stages } = useHistory();
 
-  const nodes: TimelineNode[] = [];
-  for (const s of STAGES) {
-    const p = stages[s.id];
-    const started = Object.values(p.terms).some((t) => t.result !== null);
+  const stops = journey(STAGES, stages);
+  const nodes: TimelineNode[] = stops.map((s, i) => ({
+    id: s.stage.id,
+    label: s.stage.timelineLabel,
+    title: s.stage.title,
+    status: s.status,
+    playable: s.unlocked,
+    teaser: i > 0 ? `${stops[i - 1].stage.title} を終えると旅立てる` : undefined,
+  }));
+  const last = stops[stops.length - 1];
+  const next = last.stage.nextStage;
+  if (next && !STAGES.some((x) => x.id === next.id)) {
     nodes.push({
-      id: s.id,
-      label: s.timelineLabel,
-      title: s.title,
-      status: p.completed ? 'COMPLETE' : started ? 'ARRIVED' : 'NEXT DESTINATION',
-      playable: true,
+      id: next.id,
+      label: next.timelineLabel,
+      title: next.title,
+      status: last.status === 'COMPLETE' ? 'NEXT DESTINATION' : 'LOCKED',
+      playable: false,
+      teaser: 'COMING NEXT',
     });
-    if (s.nextStage && !STAGES.some((x) => x.id === s.nextStage!.id)) {
-      nodes.push({
-        id: s.nextStage.id,
-        label: s.nextStage.timelineLabel,
-        title: s.nextStage.title,
-        status: p.completed ? 'NEXT DESTINATION' : 'LOCKED',
-        playable: false,
-      });
-    }
   }
 
   return (
     <Screen>
       <View style={styles.header}>
-        <Pressable onPress={() => router.replace('/history')} hitSlop={12}>
+        <Pressable onPress={() => router.dismissTo('/history')} hitSlop={12}>
           <Text style={styles.back}>‹</Text>
         </Pressable>
         <Text style={styles.title}>TIMELINE</Text>

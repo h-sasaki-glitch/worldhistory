@@ -42,7 +42,7 @@ export function HistoricalCharacter({ id, visible, worldWidth, worldHeight, bowe
           width: w,
           height: h,
           left: worldWidth * art.x - w / 2,
-          bottom: worldHeight * 0.02,
+          bottom: worldHeight * (art.baseline ?? 0.02),
           opacity: appear,
           transform: [
             { translateX: appear.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) },

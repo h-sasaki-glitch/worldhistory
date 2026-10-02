@@ -1,8 +1,7 @@
 import type { StageDefinition } from '@/history/stage/types';
 
 /**
- * STAGE 02 EGYPT（ドラフト）。
- * 語彙と進行の定義のみ。背景アートと人物アート（art/registry）が揃うまで STAGES には登録しない。
+ * STAGE 02 EGYPT。
  *
  * 舞台はクフ王の治世末、建設中の大ピラミッドを望むギザ。
  * スフィンクスは次王カフラーの時代とされ、オシリス信仰の記録は第5王朝以降のため、
@@ -28,7 +27,7 @@ export const EGYPT_STAGE: StageDefinition = {
   },
   // メソポタミアの二つの川と同じく、ナイル川は背景から発見する
   backgroundHotspots: [
-    { termId: 'nile', label: 'NILE', x: 0.2, y: 0.88 },
+    { termId: 'nile', label: 'NILE', x: 0.12, y: 0.92 },
     { termId: 'papyrus', label: 'PAPYRUS', x: 0.06, y: 0.74 },
     { termId: 'ra', label: 'RA', x: 0.8, y: 0.16 },
   ],
@@ -52,5 +51,10 @@ export const EGYPT_STAGE: StageDefinition = {
     line: { speaker: 'khufu', text: 'シリウスが昇れば、川があふれる。\n天が一年を教えてくれる。' },
     unlockTermId: 'solar_calendar',
     farewell: 'あなたは、この時代を離れます。',
+  },
+  nextStage: {
+    id: 'greece',
+    title: 'GREECE',
+    timelineLabel: 'BC 800',
   },
 };

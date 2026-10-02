@@ -9,6 +9,8 @@ export type TimelineNode = {
   title: string;
   status: 'COMPLETE' | 'ARRIVED' | 'NEXT DESTINATION' | 'LOCKED';
   playable: boolean;
+  /** 旅立てない時代をタップしたときの一言 */
+  teaser?: string;
 };
 
 type Props = {
@@ -33,7 +35,7 @@ export function Timeline({ nodes, onSelect }: Props) {
               <Text style={styles.year}>{n.label}</Text>
               <Text style={[styles.title, !n.playable && styles.titleDim]}>{n.title}</Text>
               <Text style={[styles.status, n.status === 'NEXT DESTINATION' && styles.statusNext]}>{n.status}</Text>
-              {teaser === n.id && <Text style={styles.teaser}>COMING NEXT</Text>}
+              {teaser === n.id && <Text style={styles.teaser}>{n.teaser ?? 'COMING NEXT'}</Text>}
             </View>
           </Pressable>
           {i < nodes.length - 1 && (
