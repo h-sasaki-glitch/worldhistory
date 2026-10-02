@@ -43,6 +43,8 @@ type Api = State & {
   markEvent: (stageId: string, eventId: string) => void;
   completeStage: (stageId: string) => DiscoveryOutcome | null;
   resetStage: (stageId: string) => void;
+  /** すべての時代の進行と ARCHIVE を消し、最初の状態に戻す */
+  resetAll: () => void;
 };
 
 const Ctx = createContext<Api | null>(null);
@@ -150,6 +152,17 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
         const after = markCompleted(before, stage, Date.now());
         if (after === before) return null;
         return archiveTerm(stageId, stage.completion.unlockTermId, 'EVENT', () => after);
+      },
+      resetAll: () => {
+        const cur = ref.current;
+        commit(
+          {
+            ...cur,
+            archive: createArchive(),
+            stages: Object.fromEntries(STAGES.map((s) => [s.id, freshStage(s.id)])),
+          },
+          ['archive', ...STAGES.map((s) => s.id)],
+        );
       },
       resetStage: (stageId) => {
         const cur = ref.current;

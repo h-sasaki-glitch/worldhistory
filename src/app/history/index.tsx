@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/history/Screen';
@@ -9,11 +10,13 @@ import { useHistory } from '@/history/store/HistoryProvider';
 
 /** タイトル画面。説明は置かず、時代へ飛び込む入口だけを示す。 */
 export default function TitleScreen() {
-  const { archive, stages } = useHistory();
+  const { archive, stages, resetAll } = useHistory();
+  const [confirming, setConfirming] = useState(false);
   const stage = currentStop(journey(STAGES, stages)).stage;
   const progress = stages[stage.id];
   const started = Object.values(progress.terms).some((t) => t.result !== null);
   const discovered = Object.keys(archive.entries).length;
+  const anyProgress = discovered > 0 || Object.values(stages).some((p) => p.completed);
 
   return (
     <Screen>
@@ -40,14 +43,41 @@ export default function TitleScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.links}>
-          <Pressable onPress={() => router.push('/history/timeline')} hitSlop={10}>
-            <Text style={styles.link}>TIMELINE</Text>
-          </Pressable>
-          <Text style={styles.sep}>・</Text>
-          <Pressable onPress={() => router.push('/history/archive')} hitSlop={10}>
-            <Text style={styles.link}>ARCHIVE {discovered > 0 ? discovered : ''}</Text>
-          </Pressable>
+        <View style={styles.footer}>
+          <View style={styles.links}>
+            <Pressable onPress={() => router.push('/history/timeline')} hitSlop={10}>
+              <Text style={styles.link}>TIMELINE</Text>
+            </Pressable>
+            <Text style={styles.sep}>・</Text>
+            <Pressable onPress={() => router.push('/history/archive')} hitSlop={10}>
+              <Text style={styles.link}>ARCHIVE {discovered > 0 ? discovered : ''}</Text>
+            </Pressable>
+          </View>
+          {anyProgress &&
+            (confirming ? (
+              <View style={styles.confirm}>
+                <Text style={styles.confirmText}>すべての時代の記録と ARCHIVE が消えます。</Text>
+                <View style={styles.confirmRow}>
+                  <Pressable
+                    onPress={() => {
+                      resetAll();
+                      setConfirming(false);
+                    }}
+                    style={styles.confirmYes}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.confirmYesText}>消して、はじめから</Text>
+                  </Pressable>
+                  <Pressable onPress={() => setConfirming(false)} hitSlop={8} accessibilityRole="button">
+                    <Text style={styles.confirmNo}>やめる</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <Pressable onPress={() => setConfirming(true)} hitSlop={8} accessibilityRole="button">
+                <Text style={styles.reset}>旅をはじめからやり直す</Text>
+              </Pressable>
+            ))}
         </View>
       </View>
     </Screen>
@@ -77,4 +107,12 @@ const styles = StyleSheet.create({
   links: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
   link: { ...caps, fontSize: 12, letterSpacing: 4, color: C.textDim },
   sep: { color: C.textFaint },
+  footer: { alignItems: 'center', gap: 18 },
+  reset: { fontFamily: F.ja, color: C.textFaint, fontSize: 11, textDecorationLine: 'underline' },
+  confirm: { alignItems: 'center', gap: 10 },
+  confirmText: { fontFamily: F.ja, color: C.textDim, fontSize: 12 },
+  confirmRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
+  confirmYes: { borderWidth: 1, borderColor: C.danger, paddingVertical: 8, paddingHorizontal: 16 },
+  confirmYesText: { fontFamily: F.ja, color: C.sand, fontSize: 13, letterSpacing: 1 },
+  confirmNo: { fontFamily: F.ja, color: C.textDim, fontSize: 12, textDecorationLine: 'underline' },
 });
