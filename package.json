@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "export:web": "expo export --platform web",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:demo": "expo export --platform web && node scripts/build-demo.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

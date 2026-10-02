@@ -1,7 +1,7 @@
 import { useAudioPlayer } from 'expo-audio';
 import { useCallback } from 'react';
 
-const DISCOVER_SOUND = require('../../../assets/sounds/discover.wav');
+import { DISCOVER_SOUND } from './discoverSoundSource';
 
 /** 正解・発見時の短い効果音 */
 export function useDiscoverySound(): () => void {
