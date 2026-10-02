@@ -27,7 +27,7 @@ export type CharacterArt = {
   heightRatio: number;
 };
 
-export const CHARACTERS: Record<StageCharacterId, CharacterArt> = {
+export const CHARACTERS: Partial<Record<StageCharacterId, CharacterArt>> = {
   scribe: { Figure: ScribeFigure, nameEn: 'SCRIBE', nameJa: '書記官', x: 0.3, heightRatio: 0.6 },
   hammurabi: { Figure: HammurabiFigure, nameEn: 'HAMMURABI', nameJa: 'ハンムラビ王', x: 0.62, heightRatio: 0.72 },
 };

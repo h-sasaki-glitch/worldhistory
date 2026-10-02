@@ -28,6 +28,7 @@ export function HistoricalCharacter({ id, visible, worldWidth, worldHeight, bowe
     Animated.timing(bow, { toValue: bowed ? 1 : 0, duration: 500, useNativeDriver: true }).start();
   }, [bowed, bow]);
 
+  if (!art) return null;
   const h = worldHeight * art.heightRatio;
   const w = h * 0.5;
   const { Figure } = art;

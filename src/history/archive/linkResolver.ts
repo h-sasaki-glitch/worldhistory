@@ -54,3 +54,32 @@ export function connectionsOf(
 export function sharesConcept(a: HistoryTerm, b: HistoryTerm): boolean {
   return !!a.conceptId && a.conceptId === b.conceptId;
 }
+
+/**
+ * TIME LINK: 同じ conceptId をもつ、別の時代（ステージ）の用語。
+ * 例: 楔形文字（メソポタミア）↔ 神聖文字（エジプト） = WRITING_SYSTEM
+ */
+export function timeLinksOf(
+  termId: string,
+  termsById: Record<string, HistoryTerm>,
+  homeStageOf: Record<string, string>,
+): HistoryTerm[] {
+  const term = termsById[termId];
+  if (!term?.conceptId) return [];
+  return Object.values(termsById).filter(
+    (t) => t.id !== termId && sharesConcept(term, t) && homeStageOf[t.id] !== homeStageOf[termId],
+  );
+}
+
+/** 概念ごとに、どの時代のどの用語が属しているか（TIME LINK の全体像） */
+export function conceptIndex(
+  termsById: Record<string, HistoryTerm>,
+  homeStageOf: Record<string, string>,
+): Record<string, { stageId: string; termId: string }[]> {
+  const out: Record<string, { stageId: string; termId: string }[]> = {};
+  for (const t of Object.values(termsById)) {
+    if (!t.conceptId) continue;
+    (out[t.conceptId] ??= []).push({ stageId: homeStageOf[t.id], termId: t.id });
+  }
+  return out;
+}

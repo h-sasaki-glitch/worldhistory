@@ -8,7 +8,8 @@ export type BackgroundHotspot = {
   y: number;
 };
 
-export type StageCharacterId = 'scribe' | 'hammurabi';
+/** 人物 ID。描画は components/history/art/registry.ts の CHARACTERS で解決する */
+export type StageCharacterId = string;
 
 export type StageLine = {
   speaker: StageCharacterId;

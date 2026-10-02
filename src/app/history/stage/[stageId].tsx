@@ -44,8 +44,8 @@ type Beat =
 type Scene = {
   worldDim: boolean;
   boardDim: boolean;
-  scribeBowed: boolean;
-  hammurabi: boolean;
+  hostBowed: boolean;
+  arrival: boolean;
 };
 
 const FIRST_SOLVE_EVENT = 'first_solve';
@@ -83,8 +83,8 @@ function StageView({ stageId }: { stageId: string }) {
   const [scene, setScene] = useState<Scene>(() => ({
     worldDim: false,
     boardDim: progress.completed,
-    scribeBowed: false,
-    hammurabi: hasFired(progress, stage.midEvent.id) || progress.completed,
+    hostBowed: false,
+    arrival: hasFired(progress, stage.midEvent.id) || progress.completed,
   }));
   const completionQueued = useRef(progress.completed);
   const enqueue = useCallback((...b: Beat[]) => setBeats((q) => [...q, ...b]), []);
@@ -139,16 +139,16 @@ function StageView({ stageId }: { stageId: string }) {
       enqueue(
         { kind: 'set', patch: { worldDim: true } },
         { kind: 'line', line: ev.reactionLine, autoMs: 2600 },
-        { kind: 'set', patch: { scribeBowed: true, worldDim: false, hammurabi: true } },
+        { kind: 'set', patch: { hostBowed: true, worldDim: false, arrival: true } },
         { kind: 'title', ...ev.titleCard, ms: 2000 },
         { kind: 'line', line: ev.line, autoMs: 6000 },
-        { kind: 'set', patch: { scribeBowed: false } },
+        { kind: 'set', patch: { hostBowed: false } },
       );
     }
     if (isCrosswordComplete(progress, stage) && !progress.completed && !completionQueued.current) {
       completionQueued.current = true;
       enqueue(
-        { kind: 'set', patch: { boardDim: true, hammurabi: true } },
+        { kind: 'set', patch: { boardDim: true, arrival: true } },
         { kind: 'line', line: stage.completion.line, autoMs: 0 },
         {
           kind: 'run',
@@ -216,8 +216,8 @@ function StageView({ stageId }: { stageId: string }) {
         <HistoryWorld
           stage={stage}
           backgroundDiscovered={progress.backgroundDiscoveries}
-          showHammurabi={scene.hammurabi}
-          scribeBowed={scene.scribeBowed}
+          showArrival={scene.arrival}
+          hostBowed={scene.hostBowed}
           dimmed={scene.worldDim}
           caption={caption}
           onCaptionPress={advance}
@@ -285,7 +285,7 @@ function StageView({ stageId }: { stageId: string }) {
                 onPress={() => {
                   api.resetStage(stageId);
                   completionQueued.current = false;
-                  setScene({ worldDim: false, boardDim: false, scribeBowed: false, hammurabi: false });
+                  setScene({ worldDim: false, boardDim: false, hostBowed: false, arrival: false });
                   setSelection(null);
                   setGlow({});
                 }}

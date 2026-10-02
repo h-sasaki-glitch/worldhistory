@@ -116,6 +116,7 @@ export const MESOPOTAMIA_TERMS: HistoryTerm[] = [
     summary:
       '日干しれんがを階段状に積み上げた聖塔。頂上に都市の守護神の神殿を置き、都市の信仰と権力の中心となった。',
     relatedTermIds: ['sumer', 'babylon', 'city_state'],
+    conceptId: 'MONUMENTAL_ARCHITECTURE',
     wikipediaTitle: 'ジッグラト',
   },
   {
@@ -266,6 +267,7 @@ export const MESOPOTAMIA_TERMS: HistoryTerm[] = [
     summary:
       'メソポタミアの太陽神で、正義と裁きの神。ハンムラビ法典の石碑には、王がこの神の前に立つ姿が刻まれている。',
     relatedTermIds: ['hammurabi_code', 'hammurabi'],
+    conceptId: 'SUN_GOD',
     wikipediaTitle: 'シャマシュ',
   },
   {

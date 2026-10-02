@@ -11,8 +11,10 @@ import { C, F, caps } from './theme';
 type Props = {
   stage: StageDefinition;
   backgroundDiscovered: string[];
-  showHammurabi: boolean;
-  scribeBowed: boolean;
+  /** 進捗イベントで登場する人物（ハンムラビなど）を表示するか */
+  showArrival: boolean;
+  /** 最初からいる人物（書記官など）が控える */
+  hostBowed: boolean;
   dimmed: boolean;
   caption: StageLine | null;
   onCaptionPress: () => void;
@@ -60,8 +62,19 @@ export function HistoryWorld(props: Props) {
 
       {size.w > 0 && (
         <>
-          <HistoricalCharacter id="scribe" visible worldWidth={size.w} worldHeight={size.h} bowed={props.scribeBowed} />
-          <HistoricalCharacter id="hammurabi" visible={props.showHammurabi} worldWidth={size.w} worldHeight={size.h} />
+          <HistoricalCharacter
+            id={stage.openingLine.speaker}
+            visible
+            worldWidth={size.w}
+            worldHeight={size.h}
+            bowed={props.hostBowed}
+          />
+          <HistoricalCharacter
+            id={stage.midEvent.character}
+            visible={props.showArrival}
+            worldWidth={size.w}
+            worldHeight={size.h}
+          />
         </>
       )}
 
@@ -158,9 +171,11 @@ function Caption({ line, onPress }: { line: StageLine; onPress: () => void }) {
   return (
     <Animated.View style={[styles.captionWrap, { opacity: a }]}>
       <Pressable onPress={onPress} style={styles.caption} accessibilityRole="button" accessibilityHint="タップで閉じる">
-        <Text style={styles.speaker}>
-          {who.nameEn} <Text style={styles.speakerJa}>{who.nameJa}</Text>
-        </Text>
+        {who && (
+          <Text style={styles.speaker}>
+            {who.nameEn} <Text style={styles.speakerJa}>{who.nameJa}</Text>
+          </Text>
+        )}
         <Text style={styles.line}>「{line.text}」</Text>
       </Pressable>
     </Animated.View>
