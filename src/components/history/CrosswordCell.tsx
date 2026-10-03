@@ -10,6 +10,8 @@ type Props = {
   col: number;
   size: number;
   letter: string | null;
+  /** 入力中（未確定）の文字 */
+  pending?: string | null;
   number?: number;
   visual: CellVisual;
   /** 値が変わるたびに軽く発光する（正解演出） */
@@ -17,7 +19,7 @@ type Props = {
   onPress: (row: number, col: number) => void;
 };
 
-function CrosswordCellImpl({ row, col, size, letter, number, visual, glowToken, onPress }: Props) {
+function CrosswordCellImpl({ row, col, size, letter, pending, number, visual, glowToken, onPress }: Props) {
   const glow = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -65,7 +67,11 @@ function CrosswordCellImpl({ row, col, size, letter, number, visual, glowToken, 
           {number}
         </Text>
       )}
-      {letter && <Text style={[styles.letter, { fontSize: size * 0.56 }]}>{letter}</Text>}
+      {letter ? (
+        <Text style={[styles.letter, { fontSize: size * 0.56 }]}>{letter}</Text>
+      ) : pending ? (
+        <Text style={[styles.pending, { fontSize: size * 0.56 }]}>{pending}</Text>
+      ) : null}
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.glow, { opacity: glow }]} />
     </Pressable>
   );
@@ -90,6 +96,11 @@ const styles = StyleSheet.create({
   },
   letter: {
     color: C.clayInk,
+    fontFamily: F.ja,
+    fontWeight: '700',
+  },
+  pending: {
+    color: '#f2dfb4',
     fontFamily: F.ja,
     fontWeight: '700',
   },

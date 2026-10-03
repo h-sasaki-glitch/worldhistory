@@ -25,15 +25,16 @@ type Props = {
   archiveCount: number;
   onArchive: () => void;
   onExit: () => void;
-  /** 世界の上に重ねる演出（DISCOVERY カードなど） */
+  /** 世界の上に重ねる演出 */
   overlay?: ReactNode;
+  /** 高さが小さいとき、見出しと字幕を詰めて組む */
+  compact?: boolean;
 };
 
 export function HistoryWorld(props: Props) {
-  const { stage, caption, titleCard } = props;
+  const { stage, caption, titleCard, compact = false } = props;
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const onLayout = (e: LayoutChangeEvent) =>
-    setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height });
+  const onLayout = (e: LayoutChangeEvent) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height });
   const Backdrop = BACKDROPS[stage.artKey];
 
   const dim = useRef(new Animated.Value(0)).current;
@@ -81,28 +82,28 @@ export function HistoryWorld(props: Props) {
 
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.dim, { opacity: dim }]} />
 
-      <View style={styles.header} pointerEvents="box-none">
+      <View style={[styles.header, compact && styles.headerCompact]} pointerEvents="box-none">
         <Pressable onPress={props.onExit} hitSlop={12} accessibilityLabel="タイトルへ戻る">
           <Text style={styles.exit}>‹</Text>
         </Pressable>
         <View style={styles.place}>
-          <Text style={styles.placeName}>{stage.place}</Text>
-          <Text style={styles.era}>{stage.eraLabel}</Text>
+          <Text style={[styles.placeName, compact && styles.placeNameCompact]}>{stage.place}</Text>
+          <Text style={[styles.era, compact && styles.eraCompact]}>{stage.eraLabel}</Text>
         </View>
         <Pressable onPress={props.onArchive} hitSlop={10} style={styles.archiveBtn} accessibilityLabel="ARCHIVE を開く">
           <Text style={styles.archiveText}>ARCHIVE</Text>
           <Text style={styles.archiveCount}>{props.archiveCount}</Text>
         </Pressable>
       </View>
-      <View style={styles.marks} pointerEvents="none">
+      <View style={[styles.marks, compact && styles.marksCompact]} pointerEvents="none">
         {Array.from({ length: props.total }, (_, i) => (
           <View key={i} style={[styles.mark, i < props.resolved && styles.markOn]} />
         ))}
       </View>
 
-      {titleCard && <TitleCard title={titleCard.title} subtitle={titleCard.subtitle} />}
+      {titleCard && <TitleCard title={titleCard.title} subtitle={titleCard.subtitle} compact={compact} />}
 
-      {caption && <Caption line={caption} onPress={props.onCaptionPress} />}
+      {caption && <Caption line={caption} onPress={props.onCaptionPress} compact={compact} />}
 
       {props.overlay}
     </View>
@@ -127,10 +128,7 @@ function Hotspot({
   onPress: () => void;
 }) {
   // ラベルは画面端で切れないよう、世界の枠内に収める
-  const labelLeft = Math.min(
-    Math.max(-(LABEL_WIDTH - 44) / 2, 6 - (x - 22)),
-    worldWidth - 6 - (x - 22) - LABEL_WIDTH,
-  );
+  const labelLeft = Math.min(Math.max(-(LABEL_WIDTH - 44) / 2, 6 - (x - 22)), worldWidth - 6 - (x - 22) - LABEL_WIDTH);
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (found) return;
@@ -168,7 +166,7 @@ function Hotspot({
   );
 }
 
-function TitleCard({ title, subtitle }: { title: string; subtitle: string }) {
+function TitleCard({ title, subtitle, compact }: { title: string; subtitle: string; compact: boolean }) {
   const a = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(a, { toValue: 1, duration: 700, useNativeDriver: true }).start();
@@ -176,14 +174,14 @@ function TitleCard({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <Animated.View pointerEvents="none" style={[styles.titleCard, { opacity: a }]}>
       <View style={styles.rule} />
-      <Text style={styles.titleText}>{title}</Text>
+      <Text style={[styles.titleText, compact && styles.titleTextCompact]}>{title}</Text>
       <Text style={styles.subtitleText}>{subtitle}</Text>
       <View style={styles.rule} />
     </Animated.View>
   );
 }
 
-function Caption({ line, onPress }: { line: StageLine; onPress: () => void }) {
+function Caption({ line, onPress, compact }: { line: StageLine; onPress: () => void; compact: boolean }) {
   const a = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     a.setValue(0);
@@ -192,13 +190,27 @@ function Caption({ line, onPress }: { line: StageLine; onPress: () => void }) {
   const who = CHARACTERS[line.speaker];
   return (
     <Animated.View style={[styles.captionWrap, { opacity: a }]}>
-      <Pressable onPress={onPress} style={styles.caption} accessibilityRole="button" accessibilityHint="タップで閉じる">
-        {who && (
-          <Text style={styles.speaker}>
-            {who.nameEn} <Text style={styles.speakerJa}>{who.nameJa}</Text>
+      <Pressable
+        onPress={onPress}
+        style={[styles.caption, compact && styles.captionCompact]}
+        accessibilityRole="button"
+        accessibilityHint="タップで閉じる"
+      >
+        {compact ? (
+          // 小さい世界では、話し手と台詞を 1 つの段落にまとめる
+          <Text style={styles.lineCompact} numberOfLines={3}>
+            {who && <Text style={styles.speakerInline}>{who.nameJa}　</Text>}「{line.text.replace(/\n/g, '')}」
           </Text>
+        ) : (
+          <>
+            {who && (
+              <Text style={styles.speaker}>
+                {who.nameEn} <Text style={styles.speakerJa}>{who.nameJa}</Text>
+              </Text>
+            )}
+            <Text style={styles.line}>「{line.text}」</Text>
+          </>
         )}
-        <Text style={styles.line}>「{line.text}」</Text>
       </Pressable>
     </Animated.View>
   );
@@ -309,4 +321,12 @@ const styles = StyleSheet.create({
   speaker: { ...caps, fontSize: 10, letterSpacing: 3, marginBottom: 3 },
   speakerJa: { fontFamily: F.ja, color: C.textDim, fontSize: 10, letterSpacing: 1 },
   line: { fontFamily: F.ja, color: C.sand, fontSize: 15, lineHeight: 22 },
+  headerCompact: { paddingTop: 6 },
+  placeNameCompact: { fontSize: 13, letterSpacing: 3 },
+  eraCompact: { fontSize: 11 },
+  marksCompact: { top: 34 },
+  titleTextCompact: { fontSize: 22, letterSpacing: 6 },
+  captionCompact: { paddingHorizontal: 12, paddingTop: 6, paddingBottom: 7 },
+  lineCompact: { fontFamily: F.ja, color: C.sand, fontSize: 13, lineHeight: 18 },
+  speakerInline: { fontFamily: F.ja, color: C.gold, fontSize: 11 },
 });

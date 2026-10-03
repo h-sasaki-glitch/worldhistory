@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
 import { hashString } from '@/history/crossword/random';
 import { buildLetterTiles, type AnswerCheck } from '@/history/input/answerInput';
@@ -12,26 +12,33 @@ type Props = {
   answer: readonly string[];
   known: readonly (string | null)[];
   onSubmit: (cells: string[]) => AnswerCheck;
+  /** 選んだ文字（未確定）を盤面のマスに表示するために通知する。位置ごとに文字か null */
+  onPendingChange: (cells: (string | null)[]) => void;
 };
 
-/** 「必要文字＋ダミー文字」の文字盤から選ぶ入力 */
-export function TileAnswerInput({ termKey, answer, known, onSubmit }: Props) {
+const GAP = 5;
+const MAX_TILE = 40;
+
+/**
+ * 「必要文字＋ダミー文字」の文字盤。1 行に収め、選んだ文字は盤面のマスに直接入る。
+ * ソフトキーボードを開かないので、スマホでも盤面が隠れない。
+ */
+export function TileAnswerInput({ termKey, answer, known, onSubmit, onPendingChange }: Props) {
   const tiles = useMemo(() => buildLetterTiles(answer, known, hashString(termKey)), [answer, known, termKey]);
   const [picked, setPicked] = useState<number[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [width, setWidth] = useState(0);
+
+  const openSlots = useMemo(() => answer.map((_, i) => i).filter((i) => !known[i]), [answer, known]);
 
   useEffect(() => {
     setPicked([]);
     setMessage(null);
   }, [termKey]);
 
-  const openSlots = answer.map((_, i) => i).filter((i) => !known[i]);
-  const slots = answer.map((_, i) => {
-    if (known[i]) return { ch: known[i]!, fixed: true };
-    const order = openSlots.indexOf(i);
-    const tileIdx = picked[order];
-    return { ch: tileIdx === undefined ? null : tiles[tileIdx], fixed: false };
-  });
+  useEffect(() => {
+    onPendingChange(answer.map((_, i) => (known[i] ? null : (tiles[picked[openSlots.indexOf(i)]] ?? null))));
+  }, [picked, answer, known, tiles, openSlots, onPendingChange]);
 
   const tap = (idx: number) => {
     if (picked.includes(idx) || picked.length >= openSlots.length) return;
@@ -40,70 +47,69 @@ export function TileAnswerInput({ termKey, answer, known, onSubmit }: Props) {
     setMessage(null);
     if (next.length === openSlots.length) {
       const cells = answer.map((_, i) => known[i] ?? tiles[next[openSlots.indexOf(i)]]);
-      const r = onSubmit(cells);
-      const msg = feedbackText(r);
+      const msg = feedbackText(onSubmit(cells));
       if (msg) {
         setMessage(msg);
-        setTimeout(() => setPicked([]), 500);
+        setTimeout(() => setPicked([]), 600);
       }
     }
   };
 
+  const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
+  // 文字タイル＋「⌫」を 1 行に収める
+  const count = tiles.length + 1;
+  const size = width > 0 ? Math.min(MAX_TILE, Math.floor((width - GAP * (count - 1)) / count)) : 0;
+
   return (
-    <View style={styles.wrap}>
-      <View style={styles.slots}>
-        {slots.map((s, i) => (
+    <View onLayout={onLayout}>
+      {size > 0 && (
+        <View style={styles.row}>
+          {tiles.map((ch, i) => (
+            <Pressable
+              key={i}
+              onPress={() => tap(i)}
+              style={[styles.tile, { width: size, height: size + 4 }, picked.includes(i) && styles.tileUsed]}
+              accessibilityRole="button"
+              accessibilityLabel={ch}
+            >
+              <Text style={[styles.tileText, { fontSize: Math.max(14, size * 0.52) }]}>{ch}</Text>
+            </Pressable>
+          ))}
           <Pressable
-            key={i}
-            onPress={() => !s.fixed && setPicked((p) => p.slice(0, Math.max(0, openSlots.indexOf(i))))}
-            style={[styles.slot, s.fixed && styles.slotFixed]}
-          >
-            <Text style={[styles.slotText, s.fixed && styles.slotTextFixed]}>{s.ch ?? ''}</Text>
-          </Pressable>
-        ))}
-      </View>
-      <View style={styles.tiles}>
-        {tiles.map((ch, i) => (
-          <Pressable
-            key={i}
-            onPress={() => tap(i)}
-            style={[styles.tile, picked.includes(i) && styles.tileUsed]}
+            onPress={() => {
+              setPicked((p) => p.slice(0, -1));
+              setMessage(null);
+            }}
+            style={[styles.back, { width: size, height: size + 4 }]}
             accessibilityRole="button"
-            accessibilityLabel={ch}
+            accessibilityLabel="1文字消す"
           >
-            <Text style={styles.tileText}>{ch}</Text>
+            <Text style={styles.backText}>⌫</Text>
           </Pressable>
-        ))}
-      </View>
+        </View>
+      )}
       {message && <Text style={styles.msg}>{message}</Text>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 8 },
-  slots: { flexDirection: 'row', gap: 4, flexWrap: 'wrap' },
-  slot: {
-    width: 30,
-    height: 32,
-    borderBottomWidth: 2,
-    borderBottomColor: C.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  slotFixed: { borderBottomColor: C.clayDark },
-  slotText: { color: C.sand, fontFamily: F.ja, fontSize: 18 },
-  slotTextFixed: { color: C.clayDark },
-  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  row: { flexDirection: 'row', gap: GAP },
   tile: {
-    width: 36,
-    height: 36,
     backgroundColor: C.clay,
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tileUsed: { opacity: 0.2 },
-  tileText: { color: C.clayInk, fontFamily: F.ja, fontSize: 18, fontWeight: '700' },
-  msg: { color: C.danger, fontFamily: F.ja, fontSize: 13 },
+  tileText: { color: C.clayInk, fontFamily: F.ja, fontWeight: '700' },
+  back: {
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: C.panelEdge,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backText: { color: C.textDim, fontSize: 18 },
+  msg: { color: C.danger, fontFamily: F.ja, fontSize: 12, marginTop: 4 },
 });

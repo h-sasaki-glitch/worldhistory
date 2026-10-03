@@ -15,12 +15,14 @@ type Props = {
   selection: WordSelection | null;
   /** termId → 発光トークン（正解の瞬間に更新） */
   glow: Record<string, number>;
+  /** 入力中の文字（キー "row:col"） */
+  pending?: Record<string, string>;
   onSelect: (row: number, col: number) => void;
 };
 
 const MAX_CELL = 44;
 
-export function CrosswordBoard({ board, boardIndex, cells, selection, glow, onSelect }: Props) {
+export function CrosswordBoard({ board, boardIndex, cells, selection, glow, pending, onSelect }: Props) {
   const [area, setArea] = useState({ w: 0, h: 0 });
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -75,6 +77,7 @@ export function CrosswordBoard({ board, boardIndex, cells, selection, glow, onSe
               col={it.col}
               size={size}
               letter={it.letter}
+              pending={pending?.[`${it.row}:${it.col}`]}
               number={it.number}
               visual={it.visual}
               glowToken={it.glow}

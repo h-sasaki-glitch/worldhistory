@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { isCrosswordChar, normalizeAnswer } from '@/history/crossword/normalizeJapanese';
 import type { AnswerCheck } from '@/history/input/answerInput';
 
 import { C, F } from '../theme';
@@ -10,10 +11,17 @@ type Props = {
   termKey: string;
   length: number;
   onSubmit: (raw: string) => AnswerCheck;
+  /** 入力中の文字を盤面のマスに表示するために通知する */
+  onPendingChange: (cells: (string | null)[]) => void;
 };
 
+function toPending(text: string, length: number): (string | null)[] {
+  const chars = Array.from(normalizeAnswer(text));
+  return Array.from({ length }, (_, i) => (chars[i] && isCrosswordChar(chars[i]) ? chars[i] : null));
+}
+
 /** 日本語キーボード入力（ひらがな・カタカナどちらでも可） */
-export function KeyboardAnswerInput({ termKey, length, onSubmit }: Props) {
+export function KeyboardAnswerInput({ termKey, length, onSubmit, onPendingChange }: Props) {
   const [text, setText] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const shake = useRef(new Animated.Value(0)).current;
@@ -22,6 +30,10 @@ export function KeyboardAnswerInput({ termKey, length, onSubmit }: Props) {
     setText('');
     setMessage(null);
   }, [termKey]);
+
+  useEffect(() => {
+    onPendingChange(toPending(text, length));
+  }, [text, length, onPendingChange]);
 
   const submit = () => {
     if (!text.trim()) return;

@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
 import { CluePanel } from '@/components/history/CluePanel';
 import { CrosswordBoard } from '@/components/history/CrosswordBoard';
@@ -16,6 +16,7 @@ import { nextUnresolved, selectAt, selectPlacement, type WordSelection } from '@
 import { STAGES_BY_ID, TERMS_BY_ID } from '@/history/data';
 import { checkAnswer, type AnswerInputMode } from '@/history/input/answerInput';
 import { pushUserBeat } from '@/history/stage/beats';
+import { stageLayout } from '@/history/stage/layout';
 import { buildStageBoards } from '@/history/stage/stageBoards';
 import {
   hasFired,
@@ -50,6 +51,16 @@ type Scene = {
 
 const FIRST_SOLVE_EVENT = 'first_solve';
 
+/** スマホなど指で操作する端末では、ソフトキーボードで盤面が隠れないよう文字盤入力を標準にする */
+function defaultInputMode(): AnswerInputMode {
+  if (Platform.OS !== 'web') return 'tiles';
+  try {
+    return window.matchMedia?.('(pointer: coarse)').matches ? 'tiles' : 'keyboard';
+  } catch {
+    return 'keyboard';
+  }
+}
+
 export default function StageScreen() {
   const { stageId = 'mesopotamia' } = useLocalSearchParams<{ stageId: string }>();
   const { hydrated } = useHistory();
@@ -77,7 +88,10 @@ function StageView({ stageId }: { stageId: string }) {
   const [boardIndex, setBoardIndex] = useState(0);
   const board = sb.boards[boardIndex];
   const [selection, setSelection] = useState<WordSelection | null>(null);
-  const [inputMode, setInputMode] = useState<AnswerInputMode>('keyboard');
+  const [inputMode, setInputMode] = useState<AnswerInputMode>(defaultInputMode);
+  const [pendingCells, setPendingCells] = useState<(string | null)[]>([]);
+  const [screen, setScreen] = useState({ w: 0, h: 0 });
+  const [clueHeight, setClueHeight] = useState(130);
   const [glow, setGlow] = useState<Record<string, number>>({});
   const [beats, setBeats] = useState<Beat[]>([]);
   const [scene, setScene] = useState<Scene>(() => ({
@@ -131,7 +145,8 @@ function StageView({ stageId }: { stageId: string }) {
     if (!api.hydrated || shifting) return;
     if (stage.firstSolveLine && !hasFired(progress, FIRST_SOLVE_EVENT) && resolvedCount(progress, stage) >= 1) {
       api.markEvent(stageId, FIRST_SOLVE_EVENT);
-      if (!shouldFireMidEvent(progress, stage)) enqueue({ kind: 'line', line: stage.firstSolveLine, autoMs: 3500, skippable: true });
+      if (!shouldFireMidEvent(progress, stage))
+        enqueue({ kind: 'line', line: stage.firstSolveLine, autoMs: 3500, skippable: true });
     }
     if (shouldFireMidEvent(progress, stage)) {
       const ev = stage.midEvent;
@@ -156,10 +171,7 @@ function StageView({ stageId }: { stageId: string }) {
             const outcome = api.completeStage(stageId);
             if (!outcome) return [{ kind: 'complete' }];
             playSound();
-            return [
-              { kind: 'discovery', outcome, heading: 'NEW DISCOVERY', autoCloseMs: 0 },
-              { kind: 'complete' },
-            ];
+            return [{ kind: 'discovery', outcome, heading: 'NEW DISCOVERY', autoCloseMs: 0 }, { kind: 'complete' }];
           },
         },
       );
@@ -168,6 +180,31 @@ function StageView({ stageId }: { stageId: string }) {
 
   const selectedPlacement = selection ? board?.placements.find((p) => p.id === selection.placementId) : undefined;
   const selectedTerm = selectedPlacement ? TERMS_BY_ID[selectedPlacement.id] : undefined;
+
+  // 入力中の文字を、選択中の語のマスに重ねて見せる
+  const pendingMap = useMemo(() => {
+    const out: Record<string, string> = {};
+    if (!selectedPlacement || isResolved(progress, selectedPlacement.id)) return out;
+    pendingCells.forEach((ch, i) => {
+      if (!ch) return;
+      const r = selectedPlacement.direction === 'down' ? selectedPlacement.row + i : selectedPlacement.row;
+      const c = selectedPlacement.direction === 'across' ? selectedPlacement.col + i : selectedPlacement.col;
+      out[`${r}:${c}`] = ch;
+    });
+    return out;
+  }, [selectedPlacement, pendingCells, progress]);
+
+  const layout =
+    board && screen.h > 0
+      ? stageLayout({
+          width: screen.w,
+          height: screen.h,
+          cols: board.width,
+          rows: board.height,
+          clueHeight,
+          tabs: sb.boards.length > 1,
+        })
+      : null;
 
   const resolveSelected = (mode: 'solve' | 'reveal') => {
     if (!selectedPlacement) return;
@@ -212,120 +249,131 @@ function StageView({ stageId }: { stageId: string }) {
 
   return (
     <Screen>
-      <View style={styles.world}>
-        <HistoryWorld
-          stage={stage}
-          backgroundDiscovered={progress.backgroundDiscoveries}
-          showArrival={scene.arrival}
-          hostBowed={scene.hostBowed}
-          dimmed={scene.worldDim}
-          caption={caption}
-          onCaptionPress={advance}
-          titleCard={titleCard}
-          onHotspot={onHotspot}
-          resolved={resolvedCount(progress, stage)}
-          total={stage.crossword.termIds.length}
-          archiveCount={Object.keys(api.archive.entries).length}
-          onArchive={() => router.push('/history/archive')}
-          onExit={() => (router.canGoBack() ? router.back() : router.replace('/history'))}
-          overlay={
-            discovery && (
-              <DiscoveryCard
-                key={`${discovery.heading}-${discovery.outcome.termId}`}
-                term={TERMS_BY_ID[discovery.outcome.termId]}
-                heading={discovery.heading}
-                newLinks={discovery.outcome.newLinks.length}
-                autoCloseMs={discovery.autoCloseMs}
-                onClose={advance}
-                onOpen={() => {
-                  advance();
-                  router.push(`/history/term/${discovery.outcome.termId}`);
-                }}
-              />
-            )
-          }
-        />
-      </View>
-
-      <View style={styles.bottom}>
-        {sb.boards.length > 1 && (
-          <View style={styles.tabs}>
-            {sb.boards.map((_, i) => (
-              <Pressable
-                key={i}
-                onPress={() => {
-                  setBoardIndex(i);
-                  setSelection(null);
-                }}
-              >
-                <Text style={[styles.tab, i === boardIndex && styles.tabOn]}>BOARD {String.fromCharCode(65 + i)}</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-        <View style={[styles.boardWrap, scene.boardDim && styles.boardDim]}>
-          <CrosswordBoard
-            board={board}
-            boardIndex={boardIndex}
-            cells={progress.cells}
-            selection={selection}
-            glow={glow}
-            onSelect={(r, c) => setSelection((cur) => selectAt(board, r, c, cur, resolvedFn) ?? cur)}
+      <View
+        style={styles.root}
+        onLayout={(e: LayoutChangeEvent) =>
+          setScreen({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })
+        }
+      >
+        <View style={layout ? { height: layout.worldHeight } : styles.world}>
+          <HistoryWorld
+            compact={layout?.compact ?? false}
+            stage={stage}
+            backgroundDiscovered={progress.backgroundDiscoveries}
+            showArrival={scene.arrival}
+            hostBowed={scene.hostBowed}
+            dimmed={scene.worldDim}
+            caption={caption}
+            onCaptionPress={advance}
+            titleCard={titleCard}
+            onHotspot={onHotspot}
+            resolved={resolvedCount(progress, stage)}
+            total={stage.crossword.termIds.length}
+            archiveCount={Object.keys(api.archive.entries).length}
+            onArchive={() => router.push('/history/archive')}
+            onExit={() => (router.canGoBack() ? router.back() : router.replace('/history'))}
           />
         </View>
 
-        {progress.completed && !showComplete ? (
-          <View style={styles.doneBar}>
-            <Text style={styles.doneText}>この時代の言葉は、すべて記された。</Text>
-            <View style={styles.doneActions}>
-              <Pressable onPress={() => router.dismissTo('/history/timeline')} style={styles.doneBtn}>
-                <Text style={styles.doneBtnText}>次の時代へ</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  api.resetStage(stageId);
-                  completionQueued.current = false;
-                  setScene({ worldDim: false, boardDim: false, hostBowed: false, arrival: false });
-                  setSelection(null);
-                  setGlow({});
-                }}
-                hitSlop={8}
-              >
-                <Text style={styles.reset}>最初から旅をやり直す</Text>
-              </Pressable>
+        <View style={styles.bottom}>
+          {sb.boards.length > 1 && (
+            <View style={styles.tabs}>
+              {sb.boards.map((_, i) => (
+                <Pressable
+                  key={i}
+                  onPress={() => {
+                    setBoardIndex(i);
+                    setSelection(null);
+                  }}
+                >
+                  <Text style={[styles.tab, i === boardIndex && styles.tabOn]}>
+                    BOARD {String.fromCharCode(65 + i)}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
-          </View>
-        ) : (
-          selectedPlacement &&
-          selectedTerm && (
-            <CluePanel
-              term={selectedTerm}
-              placement={selectedPlacement}
-              progress={progress.terms[selectedPlacement.id]}
-              known={knownLetters(progress, boardIndex, board, selectedPlacement.id)}
-              inputMode={inputMode}
-              onToggleMode={() => setInputMode((m) => (m === 'keyboard' ? 'tiles' : 'keyboard'))}
-              onSubmit={onSubmit}
-              onDiscover={() => api.discover(stageId, selectedPlacement.id)}
-              onReveal={() => resolveSelected('reveal')}
-              onOpenTerm={() => router.push(`/history/term/${selectedPlacement.id}`)}
+          )}
+          <View style={[styles.boardWrap, scene.boardDim && styles.boardDim]}>
+            <CrosswordBoard
+              board={board}
+              boardIndex={boardIndex}
+              cells={progress.cells}
+              selection={selection}
+              glow={glow}
+              pending={pendingMap}
+              onSelect={(r, c) => setSelection((cur) => selectAt(board, r, c, cur, resolvedFn) ?? cur)}
             />
-          )
+          </View>
+
+          <View onLayout={(e: LayoutChangeEvent) => setClueHeight(Math.round(e.nativeEvent.layout.height))}>
+            {progress.completed && !showComplete ? (
+              <View style={styles.doneBar}>
+                <Text style={styles.doneText}>この時代の言葉は、すべて記された。</Text>
+                <View style={styles.doneActions}>
+                  <Pressable onPress={() => router.dismissTo('/history/timeline')} style={styles.doneBtn}>
+                    <Text style={styles.doneBtnText}>次の時代へ</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      api.resetStage(stageId);
+                      completionQueued.current = false;
+                      setScene({ worldDim: false, boardDim: false, hostBowed: false, arrival: false });
+                      setSelection(null);
+                      setGlow({});
+                    }}
+                    hitSlop={8}
+                  >
+                    <Text style={styles.reset}>最初から旅をやり直す</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              selectedPlacement &&
+              selectedTerm && (
+                <CluePanel
+                  term={selectedTerm}
+                  placement={selectedPlacement}
+                  progress={progress.terms[selectedPlacement.id]}
+                  known={knownLetters(progress, boardIndex, board, selectedPlacement.id)}
+                  inputMode={inputMode}
+                  onToggleMode={() => setInputMode((m) => (m === 'keyboard' ? 'tiles' : 'keyboard'))}
+                  onSubmit={onSubmit}
+                  onPendingChange={setPendingCells}
+                  onDiscover={() => api.discover(stageId, selectedPlacement.id)}
+                  onReveal={() => resolveSelected('reveal')}
+                  onOpenTerm={() => router.push(`/history/term/${selectedPlacement.id}`)}
+                />
+              )
+            )}
+          </View>
+        </View>
+
+        {showComplete && (
+          <StageComplete
+            stage={stage}
+            summary={summarizeStage(api.archive, stageId, TERMS_BY_ID)}
+            onNext={() => {
+              advance();
+              router.dismissTo('/history/timeline');
+            }}
+            onArchive={() => router.push('/history/archive')}
+          />
         )}
       </View>
-
-      {showComplete && (
-        <StageComplete
-          stage={stage}
-          summary={summarizeStage(api.archive, stageId, TERMS_BY_ID)}
-          onNext={() => {
+      {discovery && (
+        <DiscoveryCard
+          key={`${discovery.heading}-${discovery.outcome.termId}`}
+          term={TERMS_BY_ID[discovery.outcome.termId]}
+          heading={discovery.heading}
+          newLinks={discovery.outcome.newLinks.length}
+          autoCloseMs={discovery.autoCloseMs}
+          onClose={advance}
+          onOpen={() => {
             advance();
-            router.dismissTo('/history/timeline');
+            router.push(`/history/term/${discovery.outcome.termId}`);
           }}
-          onArchive={() => router.push('/history/archive')}
         />
       )}
-
       {shifting && <TimeShift place={stage.place} era={stage.eraLabel} onDone={onShiftDone} />}
     </Screen>
   );
@@ -333,12 +381,13 @@ function StageView({ stageId }: { stageId: string }) {
 
 const styles = StyleSheet.create({
   missing: { color: C.sand, padding: 24, fontFamily: F.ja },
+  root: { flex: 1 },
   world: { flex: 4 },
-  bottom: { flex: 6, backgroundColor: C.ink },
+  bottom: { flex: 1, backgroundColor: C.ink },
   tabs: { flexDirection: 'row', gap: 18, paddingHorizontal: 16, paddingTop: 8 },
   tab: { ...caps, fontSize: 11, color: C.textFaint },
   tabOn: { color: C.gold },
-  boardWrap: { flex: 1, padding: 10 },
+  boardWrap: { flex: 1, padding: 6 },
   boardDim: { opacity: 0.45 },
   doneBar: {
     padding: 16,
