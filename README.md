@@ -9,6 +9,9 @@
 | 02 EGYPT | ギザ c. 2570 BCE | `src/history/data/terms/egypt.ts` |
 | 03 INDUS | モヘンジョ・ダロ c. 2300 BCE | `src/history/data/terms/indus.ts` |
 | 04 CHINA | 殷の都 c. 1200 BCE | `src/history/data/terms/china.ts` |
+| 05 GREECE | アテネ c. 440 BCE | `src/history/data/terms/greece.ts` |
+| 06 QIN | 咸陽 c. 210 BCE | `src/history/data/terms/qin.ts` |
+| 07 ROME | ローマ c. AD 120 | `src/history/data/terms/rome.ts` |
 
 前の時代を終えると次の時代へ進める。新しい時代は `data/terms` と `data/stages` にデータを、
 `components/history/art` に背景と人物を追加し、`data/index.ts` と `art/registry.ts` に登録する。

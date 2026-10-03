@@ -3,22 +3,44 @@ import type { HistoryTerm } from '@/history/types';
 
 import { CHINA_STAGE } from './stages/china';
 import { EGYPT_STAGE } from './stages/egypt';
+import { GREECE_STAGE } from './stages/greece';
 import { INDUS_STAGE } from './stages/indus';
 import { MESOPOTAMIA_STAGE } from './stages/mesopotamia';
+import { QIN_STAGE } from './stages/qin';
+import { ROME_STAGE } from './stages/rome';
 import { CHINA_TERMS } from './terms/china';
 import { EGYPT_TERMS } from './terms/egypt';
+import { GREECE_TERMS } from './terms/greece';
 import { INDUS_TERMS } from './terms/indus';
 import { MESOPOTAMIA_TERMS } from './terms/mesopotamia';
+import { QIN_TERMS } from './terms/qin';
+import { ROME_TERMS } from './terms/rome';
 
 /** 遊べるステージの語彙（ARCHIVE に並ぶ範囲） */
-export const ALL_TERMS: HistoryTerm[] = [...MESOPOTAMIA_TERMS, ...EGYPT_TERMS, ...INDUS_TERMS, ...CHINA_TERMS];
+export const ALL_TERMS: HistoryTerm[] = [
+  ...MESOPOTAMIA_TERMS,
+  ...EGYPT_TERMS,
+  ...INDUS_TERMS,
+  ...CHINA_TERMS,
+  ...GREECE_TERMS,
+  ...QIN_TERMS,
+  ...ROME_TERMS,
+];
 
 export const TERMS_BY_ID: Record<string, HistoryTerm> = Object.fromEntries(
   ALL_TERMS.map((t) => [t.id, t]),
 );
 
 /** 遊べるステージ（時代順） */
-export const STAGES: StageDefinition[] = [MESOPOTAMIA_STAGE, EGYPT_STAGE, INDUS_STAGE, CHINA_STAGE];
+export const STAGES: StageDefinition[] = [
+  MESOPOTAMIA_STAGE,
+  EGYPT_STAGE,
+  INDUS_STAGE,
+  CHINA_STAGE,
+  GREECE_STAGE,
+  QIN_STAGE,
+  ROME_STAGE,
+];
 
 export const STAGES_BY_ID: Record<string, StageDefinition> = Object.fromEntries(
   STAGES.map((s) => [s.id, s]),
@@ -42,6 +64,9 @@ export const HOME_STAGE_OF: Record<string, string> = Object.fromEntries([
   ...EGYPT_TERMS.map((t) => [t.id, EGYPT_STAGE.id] as const),
   ...INDUS_TERMS.map((t) => [t.id, INDUS_STAGE.id] as const),
   ...CHINA_TERMS.map((t) => [t.id, CHINA_STAGE.id] as const),
+  ...GREECE_TERMS.map((t) => [t.id, GREECE_STAGE.id] as const),
+  ...QIN_TERMS.map((t) => [t.id, QIN_STAGE.id] as const),
+  ...ROME_TERMS.map((t) => [t.id, ROME_STAGE.id] as const),
 ]);
 
 export function getTerm(id: string): HistoryTerm {

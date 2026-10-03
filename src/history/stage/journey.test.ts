@@ -5,50 +5,47 @@ import { STAGES, TERMS_BY_ID } from '@/history/data';
 import { currentStop, journey } from './journey';
 import { buildStageBoards } from './stageBoards';
 import { applySolve, createStageProgress } from './stageState';
-import type { StageProgress } from './types';
+import type { StageDefinition, StageProgress } from './types';
 
-const [meso, egypt, indus, china] = STAGES;
-const fresh = (s: typeof meso) => createStageProgress(s, buildStageBoards(s, TERMS_BY_ID).signature);
+const fresh = (s: StageDefinition) => createStageProgress(s, buildStageBoards(s, TERMS_BY_ID).signature);
+
+/** 先頭から completedCount 個の時代を終えた状態 */
+function progressWith(completedCount: number): Record<string, StageProgress> {
+  return Object.fromEntries(STAGES.map((s, i) => [s.id, { ...fresh(s), completed: i < completedCount }]));
+}
 
 describe('Journey', () => {
-  it('はじめは MESOPOTAMIA だけに旅立てる', () => {
-    const stops = journey(STAGES, { mesopotamia: fresh(meso), egypt: fresh(egypt), indus: fresh(indus), china: fresh(china) });
-    expect(stops.map((s) => s.status)).toEqual(['NEXT DESTINATION', 'LOCKED', 'LOCKED', 'LOCKED']);
+  it('はじめは最初の時代（MESOPOTAMIA）だけに旅立てる', () => {
+    const stops = journey(STAGES, progressWith(0));
+    expect(stops[0].status).toBe('NEXT DESTINATION');
+    expect(stops.slice(1).every((s) => s.status === 'LOCKED')).toBe(true);
     expect(currentStop(stops).stage.id).toBe('mesopotamia');
   });
 
   it('途中の時代は ARRIVED', () => {
+    const meso = STAGES[0];
     const p = applySolve(fresh(meso), buildStageBoards(meso, TERMS_BY_ID).boards, 'babylon', 1);
-    const stops = journey(STAGES, { mesopotamia: p, egypt: fresh(egypt), indus: fresh(indus), china: fresh(china) });
+    const stops = journey(STAGES, { ...progressWith(0), [meso.id]: p });
     expect(stops[0].status).toBe('ARRIVED');
     expect(currentStop(stops).stage.id).toBe('mesopotamia');
   });
 
-  it('MESOPOTAMIA を終えると EGYPT が次の目的地になる', () => {
-    const done: StageProgress = { ...fresh(meso), completed: true };
-    const stops = journey(STAGES, { mesopotamia: done, egypt: fresh(egypt), indus: fresh(indus), china: fresh(china) });
-    expect(stops.map((s) => s.status)).toEqual(['COMPLETE', 'NEXT DESTINATION', 'LOCKED', 'LOCKED']);
-    expect(currentStop(stops).stage.id).toBe('egypt');
-  });
-
-  it('時代は順番に開いていく（EGYPT を終えると INDUS、INDUS を終えると CHINA）', () => {
-    const stops = journey(STAGES, {
-      mesopotamia: { ...fresh(meso), completed: true },
-      egypt: { ...fresh(egypt), completed: true },
-      indus: fresh(indus),
-      china: fresh(china),
-    });
-    expect(stops.map((s) => s.status)).toEqual(['COMPLETE', 'COMPLETE', 'NEXT DESTINATION', 'LOCKED']);
-    expect(currentStop(stops).stage.id).toBe('indus');
+  it('時代は一つずつ順番に開いていく', () => {
+    for (let done = 1; done < STAGES.length; done++) {
+      const stops = journey(STAGES, progressWith(done));
+      expect(stops.map((s) => s.status)).toEqual(
+        STAGES.map((_, i) => (i < done ? 'COMPLETE' : i === done ? 'NEXT DESTINATION' : 'LOCKED')),
+      );
+      expect(currentStop(stops).stage.id).toBe(STAGES[done].id);
+    }
   });
 
   it('すべて終えたら最後の時代を案内する', () => {
-    const stops = journey(STAGES, {
-      mesopotamia: { ...fresh(meso), completed: true },
-      egypt: { ...fresh(egypt), completed: true },
-      indus: { ...fresh(indus), completed: true },
-      china: { ...fresh(china), completed: true },
-    });
-    expect(currentStop(stops).stage.id).toBe('china');
+    const stops = journey(STAGES, progressWith(STAGES.length));
+    expect(currentStop(stops).stage.id).toBe(STAGES[STAGES.length - 1].id);
+  });
+
+  it('各時代の nextStage は、次に並ぶ時代を指す', () => {
+    STAGES.slice(0, -1).forEach((s, i) => expect(s.nextStage?.id, s.id).toBe(STAGES[i + 1].id));
   });
 });

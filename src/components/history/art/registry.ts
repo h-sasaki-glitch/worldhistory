@@ -5,9 +5,20 @@ import type { StageCharacterId } from '@/history/stage/types';
 import { BabylonBackdrop } from './BabylonBackdrop';
 import { HammurabiFigure, ScribeFigure } from './Characters';
 import { EgyptianScribeFigure, KhufuFigure } from './EgyptCharacters';
+import { AthensBackdrop } from './AthensBackdrop';
+import {
+  HadrianFigure,
+  PericlesFigure,
+  QinOfficialFigure,
+  RomanEngineerFigure,
+  ShiHuangdiFigure,
+  SocratesFigure,
+} from './ClassicalCharacters';
 import { GizaBackdrop } from './GizaBackdrop';
 import { DivinerFigure, IndusMerchantFigure, PriestKingFigure, WuDingFigure } from './IndusChinaCharacters';
 import { MohenjoDaroBackdrop } from './MohenjoDaroBackdrop';
+import { RomeBackdrop } from './RomeBackdrop';
+import { XianyangBackdrop } from './XianyangBackdrop';
 import { YinxuBackdrop } from './YinxuBackdrop';
 
 /**
@@ -24,6 +35,9 @@ export const BACKDROPS: Record<string, ComponentType<BackdropProps>> = {
   giza: GizaBackdrop,
   mohenjodaro: MohenjoDaroBackdrop,
   yinxu: YinxuBackdrop,
+  athens: AthensBackdrop,
+  xianyang: XianyangBackdrop,
+  rome: RomeBackdrop,
 };
 
 export type CharacterArt = {
@@ -55,4 +69,10 @@ export const CHARACTERS: Partial<Record<StageCharacterId, CharacterArt>> = {
   priest_king: { Figure: PriestKingFigure, nameEn: 'PRIEST-KING', nameJa: '神官王', x: 0.66, heightRatio: 0.72 },
   diviner: { Figure: DivinerFigure, nameEn: 'DIVINER', nameJa: '占い師', x: 0.3, heightRatio: 0.6 },
   wu_ding: { Figure: WuDingFigure, nameEn: 'WU DING', nameJa: '武丁王', x: 0.62, heightRatio: 0.74 },
+  socrates: { Figure: SocratesFigure, nameEn: 'SOCRATES', nameJa: 'ソクラテス', x: 0.24, heightRatio: 0.6 },
+  pericles: { Figure: PericlesFigure, nameEn: 'PERICLES', nameJa: 'ペリクレス', x: 0.66, heightRatio: 0.72 },
+  qin_official: { Figure: QinOfficialFigure, nameEn: 'OFFICIAL', nameJa: '役人', x: 0.24, heightRatio: 0.6 },
+  shi_huangdi: { Figure: ShiHuangdiFigure, nameEn: 'SHI HUANGDI', nameJa: '始皇帝', x: 0.72, heightRatio: 0.74 },
+  roman_engineer: { Figure: RomanEngineerFigure, nameEn: 'ENGINEER', nameJa: '水道技師', x: 0.42, heightRatio: 0.6 },
+  hadrian: { Figure: HadrianFigure, nameEn: 'HADRIAN', nameJa: 'ハドリアヌス帝', x: 0.7, heightRatio: 0.72 },
 };
