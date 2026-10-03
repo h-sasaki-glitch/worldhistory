@@ -48,9 +48,5 @@ export const EGYPT_STAGE: StageDefinition = {
     unlockTermId: 'mummy',
     farewell: 'あなたは、この時代を離れます。',
   },
-  nextStage: {
-    id: 'greece',
-    title: 'GREECE',
-    timelineLabel: 'BC 800',
-  },
+  nextStage: { id: 'indus', title: 'INDUS', timelineLabel: 'BC 2500' },
 };

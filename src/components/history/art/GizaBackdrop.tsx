@@ -56,10 +56,10 @@ function Palm({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
   );
 }
 
-function GizaBackdropImpl({ dim = 0 }: { dim?: number }) {
+function GizaBackdropImpl({ dim = 0, viewBox }: { dim?: number; viewBox?: string }) {
   const { width: W, height: H } = ART_VIEWBOX;
   return (
-    <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
+    <Svg width="100%" height="100%" viewBox={viewBox ?? `0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
       <Defs>
         <LinearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#1c2c50" />

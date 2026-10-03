@@ -75,29 +75,38 @@ describe.each(ALL_STAGES.map((s) => [s.id, s] as const))('ステージ定義 %s'
 });
 
 describe('TIME LINK（時代をまたぐ概念）', () => {
-  const links = (id: string) => timeLinksOf(id, LIBRARY_BY_ID, HOME_STAGE_OF).map((t) => t.id);
+  const links = (id: string) => timeLinksOf(id, LIBRARY_BY_ID, HOME_STAGE_OF).map((t) => t.id).sort();
 
   it('高校受験の対比: 太陰暦 ↔ 太陽暦、60進法 ↔ 十進法', () => {
     expect(links('lunar_calendar')).toEqual(['solar_calendar']);
     expect(links('sexagesimal')).toEqual(['decimal']);
   });
 
-  it('文字体系: くさび形文字 ↔ 象形文字', () => {
-    expect(links('cuneiform')).toEqual(['hieroglyph']);
-    expect(links('hieroglyph')).toEqual(['cuneiform']);
+  it('四大文明の文字がつながる: くさび形文字・象形文字・インダス文字・甲骨文字', () => {
+    expect(links('cuneiform')).toEqual(['hieroglyph', 'indus_script', 'oracle']);
+    expect(links('oracle')).toEqual(['cuneiform', 'hieroglyph', 'indus_script']);
   });
 
-  it('書写材料・太陽神・大河・巨大建造物・河川文明でつながる', () => {
+  it('四大文明の大河がつながる（同じ時代の川どうしは含めない）', () => {
+    expect(links('nile')).toEqual(['euphrates', 'indus_river', 'tigris', 'yangtze', 'yellow_river']);
+    expect(links('tigris')).toEqual(['indus_river', 'nile', 'yangtze', 'yellow_river']);
+    expect(links('yellow_river')).not.toContain('yangtze');
+  });
+
+  it('書写材料・太陽神・巨大建造物・農耕でつながる', () => {
     expect(links('clay_tablet')).toEqual(['papyrus']);
     expect(links('shamash')).toEqual(['ra']);
-    expect(links('nile').sort()).toEqual(['euphrates', 'tigris']);
     expect(links('ziggurat')).toEqual(['pyramid']);
-    expect(links('mesopotamia')).toEqual(['egypt']);
+    expect(links('farming')).toEqual(['millet', 'rice']);
   });
 
-  it('同じ時代の中の同一概念は TIME LINK にしない', () => {
-    expect(links('pharaoh')).toEqual([]); // 他の時代に同じ概念の語はまだない
-    expect(links('tigris')).toEqual(['nile']); // ユーフラテス川は同じ時代なので含めない
+  it('河川文明: メソポタミア・エジプト・インダス文明', () => {
+    expect(links('mesopotamia')).toEqual(['egypt', 'indus_civ']);
+  });
+
+  it('他の時代に同じ概念がない語は TIME LINK を持たない', () => {
+    expect(links('pharaoh')).toEqual([]);
+    expect(links('bronze')).toEqual([]);
   });
 
   it('時代内の LINK（relatedTermIds）は時代をまたがない', () => {
@@ -106,8 +115,8 @@ describe('TIME LINK（時代をまたぐ概念）', () => {
     }
   });
 
-  it('概念索引に 2 つの時代が並ぶ', () => {
+  it('概念索引に四大文明の文字が並ぶ', () => {
     const idx = conceptIndex(LIBRARY_BY_ID, HOME_STAGE_OF);
-    expect(new Set(idx.WRITING_SYSTEM.map((x) => x.stageId))).toEqual(new Set(['mesopotamia', 'egypt']));
+    expect(new Set(idx.WRITING_SYSTEM.map((x) => x.stageId))).toEqual(new Set(['mesopotamia', 'egypt', 'indus', 'china']));
   });
 });

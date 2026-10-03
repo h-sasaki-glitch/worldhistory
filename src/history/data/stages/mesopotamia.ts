@@ -26,9 +26,9 @@ export const MESOPOTAMIA_STAGE: StageDefinition = {
     firstTermId: 'babylon',
   },
   backgroundHotspots: [
-    { termId: 'euphrates', label: 'EUPHRATES', x: 0.11, y: 0.86 },
+    { termId: 'euphrates', label: 'EUPHRATES', x: 0.11, y: 0.8 },
     { termId: 'tigris', label: 'TIGRIS', x: 0.88, y: 0.65 },
-    { termId: 'ziggurat', label: 'ZIGGURAT', x: 0.45, y: 0.57 },
+    { termId: 'ziggurat', label: 'ZIGGURAT', x: 0.45, y: 0.6 },
   ],
   openingLine: {
     speaker: 'scribe',

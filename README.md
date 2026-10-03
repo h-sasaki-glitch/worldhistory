@@ -1,7 +1,17 @@
 # PROJECT EPOCH — World History Crossword Prototype
 
-STAGE 01「MESOPOTAMIA」（BABYLON, c. 1750 BCE）の縦切りプロトタイプ。
-クロスワードを解きながら歴史上の言葉を「発見」し、ARCHIVE に残し、言葉どうしの LINK を解放していく。
+世界史クロスワードのプロトタイプ。クロスワードを解きながら歴史上の言葉を「発見」し、ARCHIVE に残し、
+言葉どうしの LINK と、時代をまたぐつながり（ACROSS TIME）を解放していく。対象は中学生（高校受験レベル）。
+
+| STAGE | 舞台 | 語彙 |
+|---|---|---|
+| 01 MESOPOTAMIA | バビロン c. 1750 BCE | `src/history/data/terms/mesopotamia.ts` |
+| 02 EGYPT | ギザ c. 2570 BCE | `src/history/data/terms/egypt.ts` |
+| 03 INDUS | モヘンジョ・ダロ c. 2300 BCE | `src/history/data/terms/indus.ts` |
+| 04 CHINA | 殷の都 c. 1200 BCE | `src/history/data/terms/china.ts` |
+
+前の時代を終えると次の時代へ進める。新しい時代は `data/terms` と `data/stages` にデータを、
+`components/history/art` に背景と人物を追加し、`data/index.ts` と `art/registry.ts` に登録する。
 
 ## 構成
 

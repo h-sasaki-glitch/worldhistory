@@ -32,7 +32,8 @@ const TAB_HEIGHT = 28;
 export function stageLayout(input: StageLayoutInput): StageLayout {
   const { width, height, cols, rows, clueHeight } = input;
   const extra = BOARD_PADDING + (input.tabs ? TAB_HEIGHT : 0);
-  const minWorld = height < 640 ? 104 : 130;
+  // 背景の DISCOVERY を見出しの下に収めるための下限（artSpace.test.ts で検証）
+  const minWorld = height < 640 ? 124 : 130;
   const maxWorld = Math.round(height * 0.42);
 
   const byWidth = Math.min(MAX_CELL, Math.floor((width - BOARD_PADDING) / Math.max(1, cols)));

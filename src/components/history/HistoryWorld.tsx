@@ -3,7 +3,7 @@ import { Animated, Easing, Pressable, StyleSheet, Text, View, type LayoutChangeE
 
 import type { StageDefinition, StageLine } from '@/history/stage/types';
 
-import { artToScreen } from './art/artSpace';
+import { artToScreen, cropFor, cropViewBox } from './art/artSpace';
 import { BACKDROPS, CHARACTERS } from './art/registry';
 import { HistoricalCharacter } from './HistoricalCharacter';
 import { TapCue } from './TapCue';
@@ -34,11 +34,21 @@ type Props = {
   compact?: boolean;
 };
 
+/** 見出し（地名・ARCHIVE ボタン・進捗の印）の高さ。背景の DISCOVERY はこれより下に置く */
+const HEADER_HEIGHT = 42;
+
 export function HistoryWorld(props: Props) {
   const { stage, caption, titleCard, compact = false } = props;
   const [size, setSize] = useState({ w: 0, h: 0 });
   const onLayout = (e: LayoutChangeEvent) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height });
   const Backdrop = BACKDROPS[stage.artKey];
+  // 低い表示領域でも背景の DISCOVERY が見える位置で切り抜く
+  const crop = cropFor(
+    size.w,
+    size.h,
+    stage.backgroundHotspots.map((h) => h.y),
+    HEADER_HEIGHT,
+  );
 
   const dim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -47,11 +57,11 @@ export function HistoryWorld(props: Props) {
 
   return (
     <View style={styles.world} onLayout={onLayout}>
-      {Backdrop && <Backdrop />}
+      {Backdrop && <Backdrop viewBox={cropViewBox(crop)} />}
 
       {size.w > 0 &&
         stage.backgroundHotspots.map((h) => {
-          const p = artToScreen(h.x, h.y, size.w, size.h);
+          const p = artToScreen(h.x, h.y, size.w, size.h, crop);
           return (
             <Hotspot
               key={h.termId}
@@ -89,9 +99,16 @@ export function HistoryWorld(props: Props) {
         <Pressable onPress={props.onExit} hitSlop={12} accessibilityLabel="タイトルへ戻る">
           <Text style={styles.exit}>‹</Text>
         </Pressable>
-        <View style={styles.place}>
-          <Text style={[styles.placeName, compact && styles.placeNameCompact]}>{stage.place}</Text>
-          <Text style={[styles.era, compact && styles.eraCompact]}>{stage.eraLabel}</Text>
+        <View style={styles.place} pointerEvents="none">
+          <Text
+            style={[styles.placeName, compact && styles.placeNameCompact, stage.place.length > 8 && styles.placeNameLong]}
+            numberOfLines={1}
+          >
+            {stage.place}
+          </Text>
+          <Text style={[styles.era, compact && styles.eraCompact]} numberOfLines={1}>
+            {stage.eraLabel}
+          </Text>
         </View>
         <Pressable onPress={props.onArchive} hitSlop={10} style={styles.archiveBtn} accessibilityLabel="ARCHIVE を開く">
           <Text style={styles.archiveText}>ARCHIVE</Text>
@@ -250,7 +267,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   exit: { color: C.sand, fontSize: 28, lineHeight: 28, paddingRight: 10, opacity: 0.8 },
-  place: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+  place: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'baseline', gap: 8, marginRight: 8, overflow: 'hidden' },
   placeName: { ...caps, fontSize: 15, color: C.sand, letterSpacing: 4 },
   era: { fontFamily: F.latin, fontSize: 12, color: C.textDim, letterSpacing: 1 },
   archiveBtn: {
@@ -339,6 +356,8 @@ const styles = StyleSheet.create({
   line: { fontFamily: F.ja, color: C.sand, fontSize: 15, lineHeight: 22 },
   headerCompact: { paddingTop: 6 },
   placeNameCompact: { fontSize: 13, letterSpacing: 3 },
+  // MOHENJO-DARO のような長い地名は字間と大きさを詰め、ARCHIVE ボタンに重ならないようにする
+  placeNameLong: { fontSize: 13, letterSpacing: 2 },
   eraCompact: { fontSize: 11 },
   marksCompact: { top: 34 },
   titleTextCompact: { fontSize: 22, letterSpacing: 6 },

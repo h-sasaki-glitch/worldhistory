@@ -6,6 +6,9 @@ import { BabylonBackdrop } from './BabylonBackdrop';
 import { HammurabiFigure, ScribeFigure } from './Characters';
 import { EgyptianScribeFigure, KhufuFigure } from './EgyptCharacters';
 import { GizaBackdrop } from './GizaBackdrop';
+import { DivinerFigure, IndusMerchantFigure, PriestKingFigure, WuDingFigure } from './IndusChinaCharacters';
+import { MohenjoDaroBackdrop } from './MohenjoDaroBackdrop';
+import { YinxuBackdrop } from './YinxuBackdrop';
 
 /**
  * アート素材とゲームロジックの境界。
@@ -13,11 +16,14 @@ import { GizaBackdrop } from './GizaBackdrop';
  * 画像に差し替える場合は、Image を返すコンポーネントをここに登録するだけでよい。
  */
 
-export type BackdropProps = { dim?: number };
+/** viewBox: 表示領域に合わせた切り抜き（artSpace.cropFor）。省略時は全体 */
+export type BackdropProps = { dim?: number; viewBox?: string };
 
 export const BACKDROPS: Record<string, ComponentType<BackdropProps>> = {
   babylon: BabylonBackdrop,
   giza: GizaBackdrop,
+  mohenjodaro: MohenjoDaroBackdrop,
+  yinxu: YinxuBackdrop,
 };
 
 export type CharacterArt = {
@@ -45,4 +51,8 @@ export const CHARACTERS: Partial<Record<StageCharacterId, CharacterArt>> = {
     baseline: 0.2,
   },
   khufu: { Figure: KhufuFigure, nameEn: 'KHUFU', nameJa: 'クフ王', x: 0.68, heightRatio: 0.72 },
+  indus_merchant: { Figure: IndusMerchantFigure, nameEn: 'MERCHANT', nameJa: '商人', x: 0.3, heightRatio: 0.6 },
+  priest_king: { Figure: PriestKingFigure, nameEn: 'PRIEST-KING', nameJa: '神官王', x: 0.66, heightRatio: 0.72 },
+  diviner: { Figure: DivinerFigure, nameEn: 'DIVINER', nameJa: '占い師', x: 0.3, heightRatio: 0.6 },
+  wu_ding: { Figure: WuDingFigure, nameEn: 'WU DING', nameJa: '武丁王', x: 0.62, heightRatio: 0.74 },
 };

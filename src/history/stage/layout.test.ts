@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import { stageLayout } from './layout';
 
-// MESOPOTAMIA の盤面（12 列 × 13 行）、手がかりパネル（文字盤入力）の実測は約 150px
-const meso = { cols: 12, rows: 13, clueHeight: 150 };
+// MESOPOTAMIA の盤面（10 列 × 11 行）、手がかりパネル（文字盤入力）の実測は約 150px
+const meso = { cols: 10, rows: 11, clueHeight: 150 };
 
 describe('Stage layout', () => {
   it('iPhone SE 相当（375×560）でもマスは 22px 以上', () => {
     const l = stageLayout({ width: 375, height: 560, ...meso });
     expect(l.cellSize).toBeGreaterThanOrEqual(22);
-    expect(l.worldHeight).toBeGreaterThanOrEqual(104);
+    expect(l.worldHeight).toBeGreaterThanOrEqual(124);
     expect(l.compact).toBe(true);
   });
 
