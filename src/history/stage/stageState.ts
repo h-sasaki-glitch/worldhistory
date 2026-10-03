@@ -155,7 +155,9 @@ export function reconcileProgress(
   for (const id of stage.crossword.termIds) {
     if (isResolved(rebuilt, id)) cells = fillCells({ ...rebuilt, cells }, boards, id);
   }
-  return { ...rebuilt, cells };
+  // 語の入れ替えなどで未解答の語が増えた場合は、完了扱いを取り消す
+  const completed = rebuilt.completed && isCrosswordComplete(rebuilt, stage);
+  return { ...rebuilt, cells, completed, completedAt: completed ? rebuilt.completedAt : undefined };
 }
 
 /** 盤面上で現在わかっている文字（他の語の正解で埋まった交差セルなど） */

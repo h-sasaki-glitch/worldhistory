@@ -3,6 +3,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { HistoryTerm } from '@/history/types';
 
+import { TapCue } from './TapCue';
 import { C, F, caps } from './theme';
 
 type Props = {
@@ -60,6 +61,11 @@ export function DiscoveryCard({ term, heading, newLinks, autoCloseMs, onClose, o
             <Text style={styles.open}>記録を見る ›</Text>
           </Pressable>
         </View>
+        {autoCloseMs === 0 && (
+          <View style={styles.cue}>
+            <TapCue waiting />
+          </View>
+        )}
       </Pressable>
     </Animated.View>
   );
@@ -93,4 +99,5 @@ const styles = StyleSheet.create({
   foot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
   links: { ...caps, fontSize: 10, color: '#9fb3e6', letterSpacing: 3 },
   open: { fontFamily: F.ja, color: C.gold, fontSize: 12 },
+  cue: { marginTop: 12, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(214,174,98,0.3)' },
 });

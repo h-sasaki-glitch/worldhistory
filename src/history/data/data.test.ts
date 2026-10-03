@@ -50,16 +50,18 @@ describe.each(ALL_STAGES.map((s) => [s.id, s] as const))('ステージ定義 %s'
       ...stage.crossword.termIds,
       ...stage.backgroundHotspots.map((h) => h.termId),
       stage.completion.unlockTermId,
+      ...(stage.midEvent.unlockTermId ? [stage.midEvent.unlockTermId] : []),
     ];
     for (const id of ids) expect(LIBRARY_BY_ID[id], id).toBeDefined();
     if (stage.crossword.firstTermId) expect(stage.crossword.termIds).toContain(stage.crossword.firstTermId);
   });
 
-  it('クロスワード・背景・完了解放の語が重複しない', () => {
+  it('クロスワード・背景・人物登場・完了解放の語が重複しない', () => {
     const ids = [
       ...stage.crossword.termIds,
       ...stage.backgroundHotspots.map((h) => h.termId),
       stage.completion.unlockTermId,
+      ...(stage.midEvent.unlockTermId ? [stage.midEvent.unlockTermId] : []),
     ];
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -75,7 +77,12 @@ describe.each(ALL_STAGES.map((s) => [s.id, s] as const))('ステージ定義 %s'
 describe('TIME LINK（時代をまたぐ概念）', () => {
   const links = (id: string) => timeLinksOf(id, LIBRARY_BY_ID, HOME_STAGE_OF).map((t) => t.id);
 
-  it('文字体系: 楔形文字 ↔ 神聖文字', () => {
+  it('高校受験の対比: 太陰暦 ↔ 太陽暦、60進法 ↔ 十進法', () => {
+    expect(links('lunar_calendar')).toEqual(['solar_calendar']);
+    expect(links('sexagesimal')).toEqual(['decimal']);
+  });
+
+  it('文字体系: くさび形文字 ↔ 象形文字', () => {
     expect(links('cuneiform')).toEqual(['hieroglyph']);
     expect(links('hieroglyph')).toEqual(['cuneiform']);
   });
@@ -89,7 +96,7 @@ describe('TIME LINK（時代をまたぐ概念）', () => {
   });
 
   it('同じ時代の中の同一概念は TIME LINK にしない', () => {
-    expect(links('mummy')).toEqual([]); // オシリスと同じ AFTERLIFE だが同じエジプト
+    expect(links('pharaoh')).toEqual([]); // 他の時代に同じ概念の語はまだない
     expect(links('tigris')).toEqual(['nile']); // ユーフラテス川は同じ時代なので含めない
   });
 

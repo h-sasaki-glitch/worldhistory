@@ -40,6 +40,8 @@ type Api = State & {
   solve: (stageId: string, termId: string) => DiscoveryOutcome;
   reveal: (stageId: string, termId: string) => DiscoveryOutcome;
   discoverBackground: (stageId: string, termId: string) => DiscoveryOutcome;
+  /** 人物の登場などの出来事で語を記録する */
+  discoverByEvent: (stageId: string, termId: string) => DiscoveryOutcome;
   markEvent: (stageId: string, eventId: string) => void;
   completeStage: (stageId: string) => DiscoveryOutcome | null;
   resetStage: (stageId: string) => void;
@@ -143,6 +145,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
         archiveTerm(stageId, termId, 'CROSSWORD', (p) => applySolve(p, boardsOf(stageId), termId, Date.now())),
       reveal: (stageId, termId) =>
         archiveTerm(stageId, termId, 'CROSSWORD', (p) => applyReveal(p, boardsOf(stageId), termId, Date.now())),
+      discoverByEvent: (stageId, termId) => archiveTerm(stageId, termId, 'EVENT', (p) => p),
       discoverBackground: (stageId, termId) =>
         archiveTerm(stageId, termId, 'BACKGROUND', (p) => addBackgroundDiscovery(p, termId)),
       markEvent: (stageId, eventId) => updateStage(stageId, (p) => markEventFired(p, eventId)),

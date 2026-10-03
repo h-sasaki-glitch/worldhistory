@@ -43,6 +43,8 @@ export type StageDefinition = {
     titleCard: { title: string; subtitle: string };
     reactionLine: StageLine;
     line: StageLine;
+    /** 人物の登場と同時に ARCHIVE に登録する語（クロスワードに入らない人物など） */
+    unlockTermId?: string;
   };
   completion: {
     line: StageLine;

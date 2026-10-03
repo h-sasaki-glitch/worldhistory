@@ -6,6 +6,7 @@ import type { StageDefinition, StageLine } from '@/history/stage/types';
 import { artToScreen } from './art/artSpace';
 import { BACKDROPS, CHARACTERS } from './art/registry';
 import { HistoricalCharacter } from './HistoricalCharacter';
+import { TapCue } from './TapCue';
 import { C, F, caps } from './theme';
 
 type Props = {
@@ -18,6 +19,8 @@ type Props = {
   dimmed: boolean;
   caption: StageLine | null;
   onCaptionPress: () => void;
+  /** 台詞がプレイヤーのタップを待っているか（自動では進まない） */
+  captionWaiting?: boolean;
   titleCard: { title: string; subtitle: string } | null;
   onHotspot: (termId: string) => void;
   resolved: number;
@@ -103,7 +106,9 @@ export function HistoryWorld(props: Props) {
 
       {titleCard && <TitleCard title={titleCard.title} subtitle={titleCard.subtitle} compact={compact} />}
 
-      {caption && <Caption line={caption} onPress={props.onCaptionPress} compact={compact} />}
+      {caption && (
+        <Caption line={caption} onPress={props.onCaptionPress} compact={compact} waiting={!!props.captionWaiting} />
+      )}
 
       {props.overlay}
     </View>
@@ -181,7 +186,17 @@ function TitleCard({ title, subtitle, compact }: { title: string; subtitle: stri
   );
 }
 
-function Caption({ line, onPress, compact }: { line: StageLine; onPress: () => void; compact: boolean }) {
+function Caption({
+  line,
+  onPress,
+  compact,
+  waiting,
+}: {
+  line: StageLine;
+  onPress: () => void;
+  compact: boolean;
+  waiting: boolean;
+}) {
   const a = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     a.setValue(0);
@@ -194,7 +209,7 @@ function Caption({ line, onPress, compact }: { line: StageLine; onPress: () => v
         onPress={onPress}
         style={[styles.caption, compact && styles.captionCompact]}
         accessibilityRole="button"
-        accessibilityHint="タップで閉じる"
+        accessibilityHint="タップして続ける"
       >
         {compact ? (
           // 小さい世界では、話し手と台詞を 1 つの段落にまとめる
@@ -211,6 +226,7 @@ function Caption({ line, onPress, compact }: { line: StageLine; onPress: () => v
             <Text style={styles.line}>「{line.text}」</Text>
           </>
         )}
+        <TapCue waiting={waiting} />
       </Pressable>
     </Animated.View>
   );

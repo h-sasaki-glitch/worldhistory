@@ -79,14 +79,14 @@ describe('Stage progress', () => {
     p = applySolve(p, sb.boards, 'cuneiform', 2);
     expect(p.terms.cuneiform.result).toBe('DISCOVER_2');
 
-    for (let i = 0; i < 5; i++) p = applyDiscover(p, 'akkad');
-    expect(p.terms.akkad.discoverLevel).toBe(3);
-    p = applySolve(p, sb.boards, 'akkad', 3);
-    expect(p.terms.akkad.result).toBe('DISCOVER_3');
+    for (let i = 0; i < 5; i++) p = applyDiscover(p, 'sumer');
+    expect(p.terms.sumer.discoverLevel).toBe(3);
+    p = applySolve(p, sb.boards, 'sumer', 3);
+    expect(p.terms.sumer.result).toBe('DISCOVER_3');
 
     // 一度確定した結果は上書きされない
-    p = applyReveal(p, sb.boards, 'akkad', 4);
-    expect(p.terms.akkad.result).toBe('DISCOVER_3');
+    p = applyReveal(p, sb.boards, 'sumer', 4);
+    expect(p.terms.sumer.result).toBe('DISCOVER_3');
   });
 
   it('正解した語のセルが埋まり、交差する語の既知文字になる', () => {
@@ -110,6 +110,13 @@ describe('Stage progress', () => {
     expect(p.backgroundDiscoveries).toEqual(['tigris']);
   });
 
+  it('語が入れ替わって未解答の語がある場合、保存された完了扱いを取り消す', () => {
+    const stale = { ...fresh(), boardSignature: 'old', completed: true, completedAt: 1 };
+    const r = reconcileProgress(stale, stage, sb.boards, sb.signature);
+    expect(r.completed).toBe(false);
+    expect(r.completedAt).toBeUndefined();
+  });
+
   it('盤面署名が変わっても学習結果を保ち、セルを作り直す', () => {
     let p = fresh();
     p = applySolve(p, sb.boards, 'babylon', 1);
@@ -124,7 +131,7 @@ describe('Stage progress', () => {
 describe('DISCOVER (調べる)', () => {
   it('LEVEL 1 はカテゴリーと地域、LEVEL 2 は追加情報', () => {
     expect(discoverLevel1(getTerm('cuneiform'))).toContain('文字・記録');
-    expect(discoverLevel2(getTerm('cuneiform'))).toBe('粘土板に刻まれました。');
+    expect(discoverLevel2(getTerm('cuneiform'))).toBe('線の形が、木を割るときに使う道具に似ています。');
   });
 
   it('LEVEL 3 は文字ヒント（クサビガタモジ → ク サ ビ _ タ モ ジ）', () => {

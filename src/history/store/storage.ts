@@ -3,8 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 /** 永続化レイヤー。失敗してもゲームは続行できるよう、例外は握りつぶして既定値を返す。 */
 
 export const STORAGE_KEYS = {
-  archive: 'epoch:v1:archive',
-  stage: (stageId: string) => `epoch:v1:stage:${stageId}`,
+  // v2: 語彙を中学（高校受験）レベルに改訂。旧語彙の記録とは互換がないため保存先を分ける
+  archive: 'epoch:v2:archive',
+  stage: (stageId: string) => `epoch:v2:stage:${stageId}`,
 } as const;
 
 export async function loadJson<T>(key: string): Promise<T | undefined> {

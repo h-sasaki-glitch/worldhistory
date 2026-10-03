@@ -10,15 +10,16 @@ export const MESOPOTAMIA_STAGE: StageDefinition = {
   timelineLabel: 'BC 3500',
   artKey: 'babylon',
   crossword: {
+    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（10×11, 交差 7）
     termIds: [
       'mesopotamia',
       'sumer',
       'cuneiform',
-      'city_state',
-      'ziggurat',
+      'lunar_calendar',
+      'sexagesimal',
       'babylon',
       'hammurabi',
-      'akkad',
+      'clay_tablet',
     ],
     seed: 1750,
     // 画面上部に BABYLON と出ている。最初の 1 語は「今いる場所」から始める
@@ -27,6 +28,7 @@ export const MESOPOTAMIA_STAGE: StageDefinition = {
   backgroundHotspots: [
     { termId: 'euphrates', label: 'EUPHRATES', x: 0.11, y: 0.86 },
     { termId: 'tigris', label: 'TIGRIS', x: 0.88, y: 0.65 },
+    { termId: 'ziggurat', label: 'ZIGGURAT', x: 0.45, y: 0.57 },
   ],
   openingLine: {
     speaker: 'scribe',

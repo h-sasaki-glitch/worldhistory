@@ -158,6 +158,16 @@ function StageView({ stageId }: { stageId: string }) {
         { kind: 'title', ...ev.titleCard, ms: 2000 },
         { kind: 'line', line: ev.line, autoMs: 6000 },
         { kind: 'set', patch: { hostBowed: false } },
+        {
+          kind: 'run',
+          fn: () => {
+            if (!ev.unlockTermId) return [];
+            const outcome = api.discoverByEvent(stageId, ev.unlockTermId);
+            if (!outcome.added) return [];
+            playSound();
+            return [{ kind: 'discovery', outcome, heading: 'NEW DISCOVERY', autoCloseMs: 3400 }];
+          },
+        },
       );
     }
     if (isCrosswordComplete(progress, stage) && !progress.completed && !completionQueued.current) {
@@ -235,6 +245,8 @@ function StageView({ stageId }: { stageId: string }) {
   };
 
   const caption = beat?.kind === 'line' ? beat.line : null;
+  // 自動では進まない台詞（クリア時の王の言葉など）はタップを待つ
+  const waitingForTap = beat?.kind === 'line' && beat.autoMs === 0;
   const titleCard = beat?.kind === 'title' ? { title: beat.title, subtitle: beat.subtitle } : null;
   const discovery = beat?.kind === 'discovery' ? beat : null;
   const showComplete = beat?.kind === 'complete';
@@ -265,6 +277,7 @@ function StageView({ stageId }: { stageId: string }) {
             dimmed={scene.worldDim}
             caption={caption}
             onCaptionPress={advance}
+          captionWaiting={waitingForTap}
             titleCard={titleCard}
             onHotspot={onHotspot}
             resolved={resolvedCount(progress, stage)}
@@ -360,6 +373,10 @@ function StageView({ stageId }: { stageId: string }) {
           />
         )}
       </View>
+      {waitingForTap && (
+        // 画面のどこをタップしても先へ進める（台詞の▼と「タップして続ける」で合図する）
+        <Pressable style={styles.tapCatcher} onPress={advance} accessibilityLabel="タップして続ける" />
+      )}
       {discovery && (
         <DiscoveryCard
           key={`${discovery.heading}-${discovery.outcome.termId}`}
@@ -382,6 +399,7 @@ function StageView({ stageId }: { stageId: string }) {
 const styles = StyleSheet.create({
   missing: { color: C.sand, padding: 24, fontFamily: F.ja },
   root: { flex: 1 },
+  tapCatcher: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 20 },
   world: { flex: 4 },
   bottom: { flex: 1, backgroundColor: C.ink },
   tabs: { flexDirection: 'row', gap: 18, paddingHorizontal: 16, paddingTop: 8 },

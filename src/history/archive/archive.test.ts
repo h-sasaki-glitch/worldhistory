@@ -34,9 +34,9 @@ describe('Archive', () => {
     expect(r.newLinks).toEqual([linkKey('babylon', 'hammurabi')]);
     a = r.archive;
     // 無関係な語では LINK は増えない
-    r = add(a, 'akkad');
-    expect(r.newLinks).toContain(linkKey('akkad', 'babylon'));
-    expect(r.newLinks).not.toContain(linkKey('akkad', 'hammurabi'));
+    r = add(a, 'euphrates');
+    expect(r.newLinks).toContain(linkKey('babylon', 'euphrates'));
+    expect(r.newLinks).not.toContain(linkKey('euphrates', 'hammurabi'));
   });
 
   it('LINK は双方向（片側にしか relatedTermIds が無くても解放）', () => {
