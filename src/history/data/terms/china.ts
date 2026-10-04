@@ -1,7 +1,7 @@
 import type { HistoryTerm } from '@/history/types';
 
 /**
- * STAGE 04 CHINA の歴史語彙（殷の都・殷墟, c. 1200 BCE）。
+ * STAGE CHINA の歴史語彙（殷の都・殷墟, c. 1200 BCE）。
  * 対象: 中学生（高校受験レベル）。
  */
 export const CHINA_TERMS: HistoryTerm[] = [
@@ -225,6 +225,7 @@ export const CHINA_TERMS: HistoryTerm[] = [
     summary:
       '中国で生まれた文字。甲骨文字がもとになり、形を変えながら受けつがれた。日本には5世紀ごろまでに伝わり、今も使われている。',
     relatedTermIds: ['oracle'],
+    conceptId: 'WRITING_SYSTEM',
     wikipediaTitle: '漢字',
   },
 ];

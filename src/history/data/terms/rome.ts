@@ -1,7 +1,7 @@
 import type { HistoryTerm } from '@/history/types';
 
 /**
- * STAGE 07 ROME の歴史語彙（ローマ, c. AD 120, ハドリアヌス帝の時代）。
+ * STAGE ROME の歴史語彙（ローマ, c. AD 120, ハドリアヌス帝の時代）。
  * 対象: 中学生（高校受験レベル）。
  */
 export const ROME_TERMS: HistoryTerm[] = [
@@ -63,7 +63,7 @@ export const ROME_TERMS: HistoryTerm[] = [
     summary:
       'ローマの円形闘技場。紀元80年に完成し、5万人ほどの観客の前で剣闘士の戦いや猛獣との戦いが行われた。',
     relatedTermIds: ['rome'],
-    wikipediaTitle: 'コロッセウム',
+    wikipediaTitle: 'コロッセオ',
   },
   {
     id: 'aqueduct',
@@ -101,7 +101,7 @@ export const ROME_TERMS: HistoryTerm[] = [
     summary:
       'ローマで発達した法。市民の権利や財産、契約などを細かく定め、今のヨーロッパや日本の法律のもとになった。',
     relatedTermIds: ['rome', 'republic'],
-    conceptId: 'LAW_CODE',
+    conceptId: 'LEGAL_SYSTEM',
     wikipediaTitle: 'ローマ法',
   },
   {
@@ -141,7 +141,7 @@ export const ROME_TERMS: HistoryTerm[] = [
     summary:
       '皇帝が国を治めるしくみ。ローマでは紀元前27年にアウグストゥスが始め、その後約200年間「ローマの平和」が続いた。',
     relatedTermIds: ['rome', 'republic', 'hadrian'],
-    conceptId: 'EMPEROR',
+    conceptId: 'IMPERIAL_RULE',
     wikipediaTitle: 'ローマ帝国',
   },
   {
@@ -180,7 +180,7 @@ export const ROME_TERMS: HistoryTerm[] = [
     summary:
       'ローマの人々が集った大きな公衆浴場。水道の水をわかし、お湯や水風呂のほか、運動場や図書室をもつものもあった。',
     relatedTermIds: ['aqueduct', 'rome'],
-    wikipediaTitle: 'テルマエ',
+    wikipediaTitle: '公衆浴場',
   },
   {
     id: 'hadrian',

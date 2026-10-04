@@ -1,7 +1,7 @@
 import type { HistoryTerm } from '@/history/types';
 
 /**
- * STAGE 05 GREECE の歴史語彙（アテネ, c. 440 BCE, ペリクレスの時代）。
+ * STAGE GREECE の歴史語彙（アテネ, c. 440 BCE, ペリクレスの時代）。
  * 対象: 中学生（高校受験レベル）。
  */
 export const GREECE_TERMS: HistoryTerm[] = [
@@ -62,7 +62,7 @@ export const GREECE_TERMS: HistoryTerm[] = [
       '成人男性の市民が民会に集まり、話し合いと多数決で国の方針を決めたしくみ。女性や奴隷は参加できなかった。',
     relatedTermIds: ['athens', 'citizen'],
     conceptId: 'DEMOCRACY',
-    wikipediaTitle: '民主政治',
+    wikipediaTitle: '民主主義',
   },
   {
     id: 'parthenon',
@@ -120,6 +120,7 @@ export const GREECE_TERMS: HistoryTerm[] = [
     summary:
       '世界や人間について筋道を立てて考える学問。古代ギリシャで、ソクラテスやその弟子のプラトンらによって発展した。',
     relatedTermIds: ['socrates'],
+    conceptId: 'THOUGHT',
     wikipediaTitle: '哲学',
   },
   {

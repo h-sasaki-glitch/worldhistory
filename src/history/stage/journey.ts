@@ -2,7 +2,9 @@ import type { StageDefinition, StageProgress } from './types';
 
 /**
  * 時代の旅の進み具合（純粋関数）。
- * 前の時代を終えると、次の時代へ旅立てる。
+ * stages は visitYear 昇順（data の STAGES）を前提とし、前の時代を終えると次の時代へ旅立てる。
+ * すでに記録のある時代は、並び順が変わっても到達済みとして開いたままにする
+ * （ステージ順の見直しで、遊んだ時代が閉じてしまわないように）。
  */
 export type StageStatus = 'COMPLETE' | 'ARRIVED' | 'NEXT DESTINATION' | 'LOCKED';
 
@@ -15,8 +17,8 @@ export type JourneyStop = {
 export function journey(stages: StageDefinition[], progress: Record<string, StageProgress | undefined>): JourneyStop[] {
   return stages.map((stage, i) => {
     const p = progress[stage.id];
-    const unlocked = i === 0 || !!progress[stages[i - 1].id]?.completed;
     const started = !!p && Object.values(p.terms).some((t) => t.result !== null);
+    const unlocked = i === 0 || !!progress[stages[i - 1].id]?.completed || started || !!p?.completed;
     const status: StageStatus = p?.completed
       ? 'COMPLETE'
       : !unlocked

@@ -45,7 +45,7 @@ class Layout {
   }
 
   /** 置ける場合は交差数、置けない場合は -1 */
-  canPlace(word: CrosswordWord, r: number, c: number, dir: Direction, maxSize: number): number {
+  canPlace(word: CrosswordWord, r: number, c: number, dir: Direction, limit: SizeLimit): number {
     const dr = dir === 'down' ? 1 : 0;
     const dc = dir === 'across' ? 1 : 0;
     const n = word.cells.length;
@@ -77,7 +77,9 @@ class Layout {
     const maxR = Math.max(this.isEmpty() ? r : this.maxR, r + dr * (n - 1));
     const minC = Math.min(this.isEmpty() ? c : this.minC, c);
     const maxC = Math.max(this.isEmpty() ? c : this.maxC, c + dc * (n - 1));
-    if (maxR - minR + 1 > maxSize || maxC - minC + 1 > maxSize) return -1;
+    const h = maxR - minR + 1;
+    const w = maxC - minC + 1;
+    if (Math.max(h, w) > limit.maxSize || Math.min(h, w) > limit.maxShortSide) return -1;
 
     return crossings;
   }
@@ -112,9 +114,16 @@ class Layout {
   }
 }
 
+/** 盤面の大きさの上限。長辺は maxSize、短辺は maxShortSide まで（向きはあとで横長にそろえられる） */
+type SizeLimit = { maxSize: number; maxShortSide: number };
+
+function sizeLimit(opts: GeneratorOptions): SizeLimit {
+  return { maxSize: opts.maxGridSize, maxShortSide: opts.maxShortSide ?? opts.maxGridSize };
+}
+
 type Candidate = { r: number; c: number; dir: Direction; crossings: number; area: number };
 
-function findCandidates(layout: Layout, word: CrosswordWord, maxSize: number): Candidate[] {
+function findCandidates(layout: Layout, word: CrosswordWord, limit: SizeLimit): Candidate[] {
   const out: Candidate[] = [];
   const seen = new Set<string>();
   for (const [key, slot] of layout.cells) {
@@ -129,7 +138,7 @@ function findCandidates(layout: Layout, word: CrosswordWord, maxSize: number): C
       const id = `${r}:${c}:${dir}`;
       if (seen.has(id)) return;
       seen.add(id);
-      const crossings = layout.canPlace(word, r, c, dir, maxSize);
+      const crossings = layout.canPlace(word, r, c, dir, limit);
       if (crossings > 0) out.push({ r, c, dir, crossings, area: layout.areaAfter(word, r, c, dir) });
     });
   }
@@ -176,6 +185,23 @@ export function buildBoard(raw: RawPlacement[]): Board {
 }
 
 /**
+ * 盤面を転置する（横の語は縦に、縦の語は横に）。
+ * 日本語のクロスワードは横＝左→右、縦＝上→下に読むので、転置しても語の読み方は変わらない。
+ * スマートフォン縦画面では盤面の領域が横長になるため、縦長の盤面を横長に直して使う。
+ */
+export function transposeBoard(board: Board): Board {
+  return buildBoard(
+    board.placements.map((p) => ({
+      id: p.id,
+      cells: p.cells,
+      row: p.col,
+      col: p.row,
+      direction: p.direction === 'across' ? 'down' : 'across',
+    })),
+  );
+}
+
+/**
  * 全体探索版: 毎手、未配置の全語の全候補から「交差数が多く・面積が小さい」ものを
  * 上位から乱数で選ぶ。語順固定版より密な盤面になりやすい。
  */
@@ -189,7 +215,7 @@ function generateGlobal(
   while (rest.length > 0 && layout.placed.length < opts.maxWords) {
     const all: (Candidate & { word: CrosswordWord })[] = [];
     for (const word of rest) {
-      for (const c of findCandidates(layout, word, opts.maxGridSize)) all.push({ ...c, word });
+      for (const c of findCandidates(layout, word, sizeLimit(opts))) all.push({ ...c, word });
     }
     if (all.length === 0) break;
     all.sort(
@@ -238,7 +264,7 @@ function generateOnce(
         next.push(word);
         continue;
       }
-      const cands = findCandidates(layout, word, opts.maxGridSize);
+      const cands = findCandidates(layout, word, sizeLimit(opts));
       if (cands.length === 0) {
         next.push(word);
         continue;
@@ -280,8 +306,9 @@ export function generateBoard(
     }
   }
   const placedIds = new Set(best!.placements.map((p) => p.id));
+  const board = opts.landscape && best!.height > best!.width ? transposeBoard(best!) : best!;
   return {
-    board: best!,
+    board,
     score: bestScore,
     unplaced: [...tooLong, ...sorted.filter((w) => !placedIds.has(w.id)).map((w) => w.id)],
   };

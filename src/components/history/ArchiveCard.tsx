@@ -15,8 +15,10 @@ type Props = {
   isDiscovered: (id: string) => boolean;
   onOpenTerm: (id: string) => void;
   onWikipedia?: () => void;
-  /** 時代をまたいで同じ概念でつながる用語（TIME LINK） */
-  acrossTime?: { termId: string; era: string }[];
+  /** 時代をまたぐつながり。label は関係の種類（比較・対照・発展・影響・同じ分類…） */
+  acrossTime?: { termId: string; era: string; label: string; note: string }[];
+  /** CONNECTED の相手との関係の種類（定めてある組だけ） */
+  relationOf?: (termId: string) => { label: string; note: string } | undefined;
 };
 
 /** ARCHIVE の記録カード（DISCOVERY 詳細） */
@@ -30,6 +32,7 @@ export function ArchiveCard({
   onOpenTerm,
   onWikipedia,
   acrossTime = [],
+  relationOf,
 }: Props) {
   return (
     <View style={styles.card}>
@@ -47,17 +50,22 @@ export function ArchiveCard({
           {connections.map((c) => {
             const t = termsById[c.termId];
             const open = isDiscovered(c.termId);
+            const rel = relationOf?.(c.termId);
             return (
               <Pressable
                 key={c.termId}
                 disabled={!open}
                 onPress={() => onOpenTerm(c.termId)}
-                style={styles.linkRow}
+                style={styles.linkItem}
                 accessibilityRole="button"
               >
-                <Text style={[styles.bullet, c.found && styles.bulletOn]}>{c.found ? '●' : '○'}</Text>
-                <Text style={[styles.linkName, !c.found && styles.linkDim]}>{t.display}</Text>
-                {open && <Text style={styles.chev}>›</Text>}
+                <View style={styles.linkRow}>
+                  <Text style={[styles.bullet, c.found && styles.bulletOn]}>{c.found ? '●' : '○'}</Text>
+                  <Text style={[styles.linkName, !c.found && styles.linkDim]}>{t.display}</Text>
+                  {rel && <Text style={[styles.tag, !c.found && styles.tagDim]}>{rel.label}</Text>}
+                  {open && <Text style={styles.chev}>›</Text>}
+                </View>
+                {rel && c.found && <Text style={styles.note}>{rel.note}</Text>}
               </Pressable>
             );
           })}
@@ -77,14 +85,18 @@ export function ArchiveCard({
                 key={x.termId}
                 disabled={!open}
                 onPress={() => onOpenTerm(x.termId)}
-                style={styles.linkRow}
+                style={styles.linkItem}
                 accessibilityRole="button"
               >
-                <Text style={[styles.bullet, open && styles.bulletTime]}>◆</Text>
-                <Text style={[styles.linkName, !open && styles.linkDim]}>
-                  {open ? termsById[x.termId].display : '？？？'}
-                </Text>
-                <Text style={styles.era}>{x.era}</Text>
+                <View style={styles.linkRow}>
+                  <Text style={[styles.bullet, open && styles.bulletTime]}>◆</Text>
+                  <Text style={[styles.linkName, !open && styles.linkDim]}>
+                    {open ? termsById[x.termId].display : '？？？'}
+                  </Text>
+                  <Text style={[styles.tag, styles.tagTime, !open && styles.tagDim]}>{x.label}</Text>
+                  <Text style={styles.era}>{x.era}</Text>
+                </View>
+                {open && <Text style={styles.note}>{x.note}</Text>}
               </Pressable>
             );
           })}
@@ -115,7 +127,20 @@ const styles = StyleSheet.create({
   summary: { fontFamily: F.ja, color: C.sand, fontSize: 15, lineHeight: 25, marginTop: 16 },
   links: { marginTop: 22, gap: 6 },
   section: { ...caps, fontSize: 11, letterSpacing: 4, marginBottom: 4 },
-  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 3 },
+  linkItem: { paddingVertical: 3 },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  tag: {
+    fontFamily: F.ja,
+    fontSize: 10,
+    color: C.gold,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: C.gold,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  tagTime: { color: '#9fb3e6', borderColor: '#9fb3e6' },
+  tagDim: { opacity: 0.45 },
+  note: { fontFamily: F.ja, color: C.textDim, fontSize: 12, lineHeight: 18, marginLeft: 24, marginTop: 2 },
   bullet: { color: C.textFaint, fontSize: 12, width: 14 },
   bulletOn: { color: C.gold },
   linkName: { fontFamily: F.ja, color: C.sand, fontSize: 15, flex: 1 },

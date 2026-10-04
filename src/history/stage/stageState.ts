@@ -144,10 +144,13 @@ export function reconcileProgress(
   if (!saved || saved.version !== 1 || saved.stageId !== stage.id) {
     return createStageProgress(stage, signature);
   }
+  const fresh = createStageProgress(stage, signature);
+  // 現在のクロスワードにない語（語彙の見直しで外した語）の記録は持ち越さない
+  const keptTerms = Object.fromEntries(Object.entries(saved.terms ?? {}).filter(([id]) => id in fresh.terms));
   const base: StageProgress = {
-    ...createStageProgress(stage, signature),
+    ...fresh,
     ...saved,
-    terms: { ...createStageProgress(stage, signature).terms, ...saved.terms },
+    terms: { ...fresh.terms, ...keptTerms },
   };
   if (saved.boardSignature === signature) return base;
   let cells: Record<string, string> = {};

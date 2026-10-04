@@ -1,7 +1,7 @@
 import type { StageDefinition } from '@/history/stage/types';
 
 /**
- * STAGE 04 CHINA。
+ * STAGE CHINA。
  *
  * 舞台は殷の後期の都（のちの殷墟, 現在の河南省安陽市）、武丁王の時代。
  * 版築（土をつき固めた基壇）の上の宮殿、青銅器、甲骨を焼く占いの火。
@@ -9,15 +9,15 @@ import type { StageDefinition } from '@/history/stage/types';
  */
 export const CHINA_STAGE: StageDefinition = {
   id: 'china',
-  number: 4,
   title: 'CHINA',
   place: 'YIN',
+  civilizationId: 'china',
   eraLabel: 'c. 1200 BCE',
-  timelineYear: -1600,
-  timelineLabel: 'BC 1600',
+  visitYear: -1200,
+  timelineLabel: 'BC 1200',
   artKey: 'yinxu',
   crossword: {
-    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（10×7, 交差 7）
+    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（スマートフォン向け 10×7, 交差 7）
     termIds: ['yin', 'oracle', 'bronze', 'yellow_river', 'yangtze', 'divination', 'rice', 'yinxu'],
     seed: 1200,
     firstTermId: 'yin',
@@ -42,5 +42,4 @@ export const CHINA_STAGE: StageDefinition = {
     unlockTermId: 'kanji',
     farewell: 'あなたは、この時代を離れます。',
   },
-  nextStage: { id: 'greece', title: 'GREECE', timelineLabel: 'BC 800' },
 };

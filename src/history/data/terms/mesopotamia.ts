@@ -1,7 +1,7 @@
 import type { HistoryTerm } from '@/history/types';
 
 /**
- * STAGE 01 MESOPOTAMIA の歴史語彙。
+ * STAGE MESOPOTAMIA の歴史語彙。
  * 対象: 中学生（高校受験レベル）。用語・表記は中学校の歴史教科書に合わせる（チグリス川・くさび形文字など）。
  * - crosswordAnswer はカタカナのみ（正規化は crossword/normalizeJapanese.ts）
  * - 年代は概数（紀元前は負数）
@@ -265,7 +265,7 @@ export const MESOPOTAMIA_TERMS: HistoryTerm[] = [
     summary:
       'ハンムラビ王が定め、くさび形文字で石碑にきざんだ法。「目には目を、歯には歯を」で知られ、身分によって罰が違った。',
     relatedTermIds: ['hammurabi', 'shamash', 'cuneiform'],
-    conceptId: 'LAW_CODE',
+    conceptId: 'LEGAL_SYSTEM',
     wikipediaTitle: 'ハンムラビ法典',
   },
   {

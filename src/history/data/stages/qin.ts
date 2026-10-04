@@ -1,23 +1,23 @@
 import type { StageDefinition } from '@/history/stage/types';
 
 /**
- * STAGE 06 QIN。
+ * STAGE QIN。
  *
  * 舞台は始皇帝の晩年の秦の都・咸陽（c. 210 BCE）。
  * 秦は黒を尊んだため、役人や皇帝の衣は黒で描く。遠景には北の長城を望む。
  */
 export const QIN_STAGE: StageDefinition = {
   id: 'qin',
-  number: 6,
   title: 'QIN',
   place: 'XIANYANG',
+  civilizationId: 'china',
   eraLabel: 'c. 210 BCE',
-  timelineYear: -221,
-  timelineLabel: 'BC 221',
+  visitYear: -210,
+  timelineLabel: 'BC 210',
   artKey: 'xianyang',
   crossword: {
-    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（7×10, 交差 7）
-    termIds: ['qin', 'shihuang', 'wall', 'coin', 'measure', 'confucian', 'emperor', 'law'],
+    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（スマートフォン向け 10×8, 交差 7。法家＝ホウカ）
+    termIds: ['qin', 'shihuang', 'wall', 'coin', 'measure', 'confucian', 'emperor', 'legalism'],
     seed: 210,
     firstTermId: 'qin',
   },
@@ -40,5 +40,4 @@ export const QIN_STAGE: StageDefinition = {
     unlockTermId: 'terracotta',
     farewell: 'あなたは、この時代を離れます。',
   },
-  nextStage: { id: 'rome', title: 'ROME', timelineLabel: 'BC 27' },
 };

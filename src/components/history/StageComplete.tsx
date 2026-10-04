@@ -9,12 +9,14 @@ import { C, F, caps } from './theme';
 type Props = {
   stage: StageDefinition;
   summary: StageSummary;
+  /** 次の目的地（visitYear で決まる。最後の時代なら予告、なければ省略） */
+  next?: { title: string; timelineLabel: string };
   onNext: () => void;
   onArchive: () => void;
 };
 
 /** ステージ終了画面。スコアや星ではなく「何を発見したか」だけを残す。 */
-export function StageComplete({ stage, summary, onNext, onArchive }: Props) {
+export function StageComplete({ stage, summary, next, onNext, onArchive }: Props) {
   const a = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(a, { toValue: 1, duration: 900, useNativeDriver: true }).start();
@@ -49,6 +51,11 @@ export function StageComplete({ stage, summary, onNext, onArchive }: Props) {
 
         <Pressable onPress={onNext} style={styles.next} accessibilityRole="button">
           <Text style={styles.nextText}>次の時代へ</Text>
+          {next && (
+            <Text style={styles.nextDest}>
+              {next.title} ・ {next.timelineLabel}
+            </Text>
+          )}
         </Pressable>
         <Pressable onPress={onArchive} hitSlop={8} accessibilityRole="button">
           <Text style={styles.archive}>ARCHIVE を見る</Text>
@@ -79,5 +86,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(214,174,98,0.08)',
   },
   nextText: { fontFamily: F.ja, color: '#f2dfb4', fontSize: 16, letterSpacing: 4 },
+  nextDest: { ...caps, fontSize: 10, letterSpacing: 3, color: C.textDim, marginTop: 4 },
   archive: { ...caps, fontSize: 11, color: C.textDim, textAlign: 'center', marginTop: 16 },
 });

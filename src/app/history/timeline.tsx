@@ -4,11 +4,15 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/history/Screen';
 import { C, F, caps } from '@/components/history/theme';
 import { Timeline, type TimelineNode } from '@/components/history/Timeline';
-import { STAGES } from '@/history/data';
+import { CIVILIZATIONS, STAGES, UPCOMING_STAGES } from '@/history/data';
+import { formatYear, nextStopAfter } from '@/history/stage/chronology';
 import { journey } from '@/history/stage/journey';
 import { useHistory } from '@/history/store/HistoryProvider';
 
-/** タイムライン。実装済みの時代と、次の目的地（未実装）を並べる。 */
+/**
+ * タイムライン。訪れる年（visitYear）の順に時代を並べ、最後に次の目的地（未実装）を置く。
+ * 各時代には、その文明そのものが始まった年も小さく添える（訪れる年とは別物）。
+ */
 export default function TimelineScreen() {
   const { stages } = useHistory();
 
@@ -17,17 +21,18 @@ export default function TimelineScreen() {
     id: s.stage.id,
     label: s.stage.timelineLabel,
     title: s.stage.title,
+    sub: civilizationLine(s.stage.civilizationId),
     status: s.status,
     playable: s.unlocked,
     teaser: i > 0 ? `${stops[i - 1].stage.title} を終えると旅立てる` : undefined,
   }));
   const last = stops[stops.length - 1];
-  const next = last.stage.nextStage;
-  if (next && !STAGES.some((x) => x.id === next.id)) {
+  const next = nextStopAfter(last.stage.id, STAGES, UPCOMING_STAGES);
+  if (next?.kind === 'upcoming') {
     nodes.push({
-      id: next.id,
-      label: next.timelineLabel,
-      title: next.title,
+      id: next.upcoming.id,
+      label: next.upcoming.timelineLabel,
+      title: next.upcoming.title,
       status: last.status === 'COMPLETE' ? 'NEXT DESTINATION' : 'LOCKED',
       playable: false,
       teaser: 'COMING NEXT',
@@ -51,6 +56,11 @@ export default function TimelineScreen() {
       </ScrollView>
     </Screen>
   );
+}
+
+function civilizationLine(civilizationId: string): string | undefined {
+  const civ = CIVILIZATIONS[civilizationId];
+  return civ ? `${civ.nameJa}のはじまり ${formatYear(civ.startYear)}ごろ` : undefined;
 }
 
 const styles = StyleSheet.create({

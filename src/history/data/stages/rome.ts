@@ -1,22 +1,22 @@
 import type { StageDefinition } from '@/history/stage/types';
 
 /**
- * STAGE 07 ROME。
+ * STAGE ROME。
  *
  * 舞台はハドリアヌス帝の時代のローマ（c. AD 120,「ローマの平和」の時代）。
  * コロッセオ（80年完成）、水道橋、建て直し中のパンテオン、トラヤヌス帝の浴場（109年）。
  */
 export const ROME_STAGE: StageDefinition = {
   id: 'rome',
-  number: 7,
   title: 'ROME',
   place: 'ROME',
+  civilizationId: 'rome',
   eraLabel: 'c. AD 120',
-  timelineYear: -27,
-  timelineLabel: 'BC 27',
+  visitYear: 120,
+  timelineLabel: 'AD 120',
   artKey: 'rome',
   crossword: {
-    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（9×7, 交差 7）
+    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（スマートフォン向け 9×7, 交差 7）
     termIds: ['rome', 'republic', 'colosseum', 'aqueduct', 'roman_law', 'pantheon', 'empire', 'roman_road'],
     seed: 120,
     firstTermId: 'rome',
@@ -41,5 +41,4 @@ export const ROME_STAGE: StageDefinition = {
     unlockTermId: 'christianity',
     farewell: 'あなたは、この時代を離れます。',
   },
-  nextStage: { id: 'arabia', title: 'ARABIA', timelineLabel: 'AD 610' },
 };

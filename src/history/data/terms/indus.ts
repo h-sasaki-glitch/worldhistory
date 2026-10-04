@@ -1,7 +1,7 @@
 import type { HistoryTerm } from '@/history/types';
 
 /**
- * STAGE 03 INDUS の歴史語彙（モヘンジョ・ダロ, c. 2300 BCE）。
+ * STAGE INDUS の歴史語彙（モヘンジョ・ダロ, c. 2300 BCE）。
  * 対象: 中学生（高校受験レベル）。
  * - インダス文字は未解読のため、王や人物の名前は伝わっていない（「神官王」は後世の呼び名）
  */

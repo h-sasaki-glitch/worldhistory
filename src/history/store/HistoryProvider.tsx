@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
-import { addDiscovery, createArchive } from '@/history/archive/archiveStore';
+import { addDiscovery, createArchive, sanitizeArchive } from '@/history/archive/archiveStore';
 import type { ArchiveState, DiscoverySource } from '@/history/archive/types';
 import { STAGES, STAGES_BY_ID, TERMS_BY_ID } from '@/history/data';
 import { buildStageBoards, playableTermIds } from '@/history/stage/stageBoards';
@@ -83,7 +83,9 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
         const sb = buildStageBoards(s, TERMS_BY_ID);
         stages[s.id] = reconcileProgress(saved, playable(s.id), sb.boards, sb.signature);
       }
-      if (alive) setState({ hydrated: true, archive: archive.version === 1 ? archive : createArchive(), stages });
+      // 語彙の見直しで廃止した語の記録は取り除く（保存形式は v2 のまま、読み込み時に移行する）
+      const current = archive.version === 1 ? sanitizeArchive(archive, TERMS_BY_ID) : createArchive();
+      if (alive) setState({ hydrated: true, archive: current, stages });
     })();
     return () => {
       alive = false;

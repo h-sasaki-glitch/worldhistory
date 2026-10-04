@@ -1,7 +1,7 @@
 import type { StageDefinition } from '@/history/stage/types';
 
 /**
- * STAGE 02 EGYPT。
+ * STAGE EGYPT。
  *
  * 舞台はクフ王の治世末、建設中の大ピラミッドを望むギザ。
  * スフィンクスは次王カフラーの時代とされ、オシリス信仰の記録は第5王朝以降のため、
@@ -9,18 +9,24 @@ import type { StageDefinition } from '@/history/stage/types';
  */
 export const EGYPT_STAGE: StageDefinition = {
   id: 'egypt',
-  number: 2,
   title: 'EGYPT',
   place: 'GIZA',
+  civilizationId: 'egypt',
   eraLabel: 'c. 2570 BCE',
-  timelineYear: -2600,
-  timelineLabel: 'BC 2600',
+  visitYear: -2570,
+  timelineLabel: 'BC 2570',
   artKey: 'giza',
   crossword: {
-    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（10×10, 交差 7）。
+    // 中学（高校受験）レベルの語から選定。
     // 青銅器はこの時代のエジプトではまだ普及しておらず（主に銅器）、奴隷による建設説は現在否定されているため候補から外した。
     termIds: ['egypt', 'nile', 'pyramid', 'hieroglyph', 'solar_calendar', 'papyrus', 'decimal', 'farming'],
     seed: 2570,
+    // 8 語を 1 枚に収めると 10×10 になり、スマートフォンでマスが 28px を下回る。
+    // 2 枚に分け、A に文明の土台（国・川・文字・農耕）、B に技術と建造物をまとめる。
+    boards: [
+      { label: '文明と暮らし', termIds: ['egypt', 'nile', 'hieroglyph', 'farming'] },
+      { label: '技術と建造物', termIds: ['pyramid', 'solar_calendar', 'papyrus', 'decimal'] },
+    ],
     // 「ナイルのたまもの」から入る
     firstTermId: 'egypt',
   },
@@ -48,5 +54,4 @@ export const EGYPT_STAGE: StageDefinition = {
     unlockTermId: 'mummy',
     farewell: 'あなたは、この時代を離れます。',
   },
-  nextStage: { id: 'indus', title: 'INDUS', timelineLabel: 'BC 2500' },
 };

@@ -1,7 +1,7 @@
 import type { HistoryTerm } from '@/history/types';
 
 /**
- * STAGE 02 EGYPT の歴史語彙（古王国・クフ王の時代, ギザ c. 2570 BCE）。
+ * STAGE EGYPT の歴史語彙（古王国・クフ王の時代, ギザ c. 2570 BCE）。
  * 対象: 中学生（高校受験レベル）。用語・表記は中学校の歴史教科書に合わせる（象形文字・太陽暦など）。
  * - crosswordAnswer はカタカナのみ
  * - conceptId はメソポタミアの語と時代をまたいで接続する（太陰暦↔太陽暦、60進法↔十進法 など）
@@ -115,7 +115,7 @@ export const EGYPT_TERMS: HistoryTerm[] = [
       '1年を365日とするこよみ。ナイル川がはんらんする時期を知るために発達し、今のこよみのもとになった。',
     relatedTermIds: ['nile', 'farming'],
     conceptId: 'CALENDAR',
-    wikipediaTitle: 'エジプト暦',
+    wikipediaTitle: '太陽暦',
   },
   {
     id: 'papyrus',

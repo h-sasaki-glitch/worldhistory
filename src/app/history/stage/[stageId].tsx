@@ -13,11 +13,12 @@ import { TimeShift } from '@/components/history/TimeShift';
 import { useDiscoverySound } from '@/components/history/useDiscoverySound';
 import { summarizeStage } from '@/history/archive/archiveStore';
 import { nextUnresolved, selectAt, selectPlacement, type WordSelection } from '@/history/crossword/selection';
-import { STAGES_BY_ID, TERMS_BY_ID } from '@/history/data';
+import { STAGES, STAGES_BY_ID, TERMS_BY_ID, UPCOMING_STAGES } from '@/history/data';
 import { checkAnswer, type AnswerInputMode } from '@/history/input/answerInput';
 import { pushUserBeat } from '@/history/stage/beats';
+import { nextStopAfter, nextStopLabel } from '@/history/stage/chronology';
 import { stageLayout } from '@/history/stage/layout';
-import { buildStageBoards } from '@/history/stage/stageBoards';
+import { boardTabLabel, buildStageBoards, initialBoardIndex, nextTarget } from '@/history/stage/stageBoards';
 import {
   hasFired,
   isCrosswordComplete,
@@ -62,7 +63,7 @@ function defaultInputMode(): AnswerInputMode {
 }
 
 export default function StageScreen() {
-  const { stageId = 'mesopotamia' } = useLocalSearchParams<{ stageId: string }>();
+  const { stageId = STAGES[0].id } = useLocalSearchParams<{ stageId: string }>();
   const { hydrated } = useHistory();
   if (!STAGES_BY_ID[stageId]) {
     return (
@@ -80,12 +81,16 @@ function StageView({ stageId }: { stageId: string }) {
   const api = useHistory();
   const baseStage = STAGES_BY_ID[stageId];
   const stage = useMemo(() => api.playableStage(stageId), [api, stageId]);
+  const nextStop = useMemo(() => nextStopAfter(stageId, STAGES, UPCOMING_STAGES), [stageId]);
   const sb = useMemo(() => buildStageBoards(baseStage, TERMS_BY_ID), [baseStage]);
   const progress = api.progressOf(stageId);
   const playSound = useDiscoverySound();
 
   const [shifting, setShifting] = useState(true);
-  const [boardIndex, setBoardIndex] = useState(0);
+  // 最初の語がある盤面（途中から再開した場合は、未解答の残る盤面）から始める
+  const [boardIndex, setBoardIndex] = useState(() =>
+    initialBoardIndex(sb, baseStage.crossword.firstTermId, (id) => isResolved(progress, id)),
+  );
   const board = sb.boards[boardIndex];
   const [selection, setSelection] = useState<WordSelection | null>(null);
   const [inputMode, setInputMode] = useState<AnswerInputMode>(defaultInputMode);
@@ -223,8 +228,12 @@ function StageView({ stageId }: { stageId: string }) {
     playSound();
     setGlow((g) => ({ ...g, [id]: Date.now() }));
     enqueueUserBeat({ kind: 'discovery', outcome, heading: 'DISCOVERED', autoCloseMs: 3400 });
-    const next = nextUnresolved(board, id, (x) => x === id || isResolved(progress, x));
-    if (next) setSelection(selectPlacement(next));
+    // いまの盤面を解き終えたら、未解答の残る次の盤面へ自動で移る
+    const next = nextTarget(sb, boardIndex, id, (x) => x === id || isResolved(progress, x));
+    if (next) {
+      if (next.boardIndex !== boardIndex) setBoardIndex(next.boardIndex);
+      setSelection(selectPlacement(next.placement));
+    }
   };
 
   const onSubmit = (raw: string | string[]) => {
@@ -291,19 +300,27 @@ function StageView({ stageId }: { stageId: string }) {
         <View style={styles.bottom}>
           {sb.boards.length > 1 && (
             <View style={styles.tabs}>
-              {sb.boards.map((_, i) => (
-                <Pressable
-                  key={i}
-                  onPress={() => {
-                    setBoardIndex(i);
-                    setSelection(null);
-                  }}
-                >
-                  <Text style={[styles.tab, i === boardIndex && styles.tabOn]}>
-                    BOARD {String.fromCharCode(65 + i)}
-                  </Text>
-                </Pressable>
-              ))}
+              {sb.boards.map((b, i) => {
+                const left = b.placements.filter((p) => !isResolved(progress, p.id)).length;
+                return (
+                  <Pressable
+                    key={i}
+                    onPress={() => {
+                      setBoardIndex(i);
+                      setSelection(null);
+                    }}
+                    hitSlop={{ top: 8, bottom: 8 }}
+                    style={[styles.tabBtn, i === boardIndex && styles.tabBtnOn]}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: i === boardIndex }}
+                  >
+                    <Text style={[styles.tab, i === boardIndex && styles.tabOn]} numberOfLines={1}>
+                      {boardTabLabel(sb, i)}
+                    </Text>
+                    <Text style={[styles.tabCount, left === 0 && styles.tabDone]}>{left === 0 ? '✓' : left}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
           )}
           <View style={[styles.boardWrap, scene.boardDim && styles.boardDim]}>
@@ -364,6 +381,7 @@ function StageView({ stageId }: { stageId: string }) {
         {showComplete && (
           <StageComplete
             stage={stage}
+            next={nextStop ? nextStopLabel(nextStop) : undefined}
             summary={summarizeStage(api.archive, stageId, TERMS_BY_ID)}
             onNext={() => {
               advance();
@@ -402,9 +420,21 @@ const styles = StyleSheet.create({
   tapCatcher: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 20 },
   world: { flex: 4 },
   bottom: { flex: 1, backgroundColor: C.ink },
-  tabs: { flexDirection: 'row', gap: 18, paddingHorizontal: 16, paddingTop: 8 },
-  tab: { ...caps, fontSize: 11, color: C.textFaint },
+  tabs: { flexDirection: 'row', gap: 8, paddingHorizontal: 12, paddingTop: 6 },
+  tabBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 8,
+    height: 22,
+    borderBottomWidth: 1,
+    borderBottomColor: 'transparent',
+  },
+  tabBtnOn: { borderBottomColor: C.gold },
+  tab: { fontFamily: F.ja, fontSize: 11, letterSpacing: 1, color: C.textFaint },
   tabOn: { color: C.gold },
+  tabCount: { fontFamily: F.latin, fontSize: 10, color: C.textDim },
+  tabDone: { color: C.gold },
   boardWrap: { flex: 1, padding: 6 },
   boardDim: { opacity: 0.45 },
   doneBar: {

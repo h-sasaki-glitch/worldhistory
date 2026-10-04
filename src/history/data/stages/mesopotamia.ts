@@ -2,15 +2,15 @@ import type { StageDefinition } from '@/history/stage/types';
 
 export const MESOPOTAMIA_STAGE: StageDefinition = {
   id: 'mesopotamia',
-  number: 1,
   title: 'MESOPOTAMIA',
   place: 'BABYLON',
+  civilizationId: 'mesopotamia',
   eraLabel: 'c. 1750 BCE',
-  timelineYear: -3500,
-  timelineLabel: 'BC 3500',
+  visitYear: -1750,
+  timelineLabel: 'BC 1750',
   artKey: 'babylon',
   crossword: {
-    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（10×11, 交差 7）
+    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（スマートフォン向け 12×8, 交差 7）
     termIds: [
       'mesopotamia',
       'sumer',
@@ -50,10 +50,5 @@ export const MESOPOTAMIA_STAGE: StageDefinition = {
     line: { speaker: 'hammurabi', text: '言葉は消える。\n記されたものは残る。' },
     unlockTermId: 'hammurabi_code',
     farewell: 'あなたは、この時代を離れます。',
-  },
-  nextStage: {
-    id: 'egypt',
-    title: 'EGYPT',
-    timelineLabel: 'BC 2600',
   },
 };

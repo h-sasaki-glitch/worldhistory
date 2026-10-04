@@ -18,12 +18,18 @@ export type StageLine = {
 
 export type StageDefinition = {
   id: string;
-  number: number;
   title: string;
   place: string;
+  /** どの文明を訪れるか（data/civilizations.ts）。文明の起点年はそちらに持つ */
+  civilizationId: string;
+  /**
+   * プレイヤーが訪れる年（紀元前は負数）。ステージの並び・番号・次の時代はこの値で決まる。
+   * 文明の起点年（civilizationStartYear）とは別物。
+   */
+  visitYear: number;
+  /** 舞台の年代表示（例: c. 1750 BCE） */
   eraLabel: string;
-  /** タイムライン上の位置（紀元前は負数） */
-  timelineYear: number;
+  /** タイムライン上の表示（visitYear と一致させる。例: BC 1750） */
   timelineLabel: string;
   /** 背景アートのキー（art/registry で差し替え可能） */
   artKey: string;
@@ -32,6 +38,12 @@ export type StageDefinition = {
     seed: number;
     /** 最初に選択しておく語（ルールを掴みやすい語を指定） */
     firstTermId?: string;
+    /**
+     * 盤面の分け方（任意）。スマートフォンでマスが小さくなりすぎる時代だけ指定する。
+     * 各グループが 1 枚の盤面（BOARD A, B, …）になり、label がタブに出る。
+     * termIds はすべてのグループの語を合わせたものと一致させる（data.test.ts で検証）。
+     */
+    boards?: { label: string; termIds: string[] }[];
   };
   backgroundHotspots: BackgroundHotspot[];
   openingLine: StageLine;
@@ -50,11 +62,6 @@ export type StageDefinition = {
     line: StageLine;
     unlockTermId: string;
     farewell: string;
-  };
-  nextStage?: {
-    id: string;
-    title: string;
-    timelineLabel: string;
   };
 };
 

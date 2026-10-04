@@ -7,6 +7,8 @@ export type TimelineNode = {
   id: string;
   label: string;
   title: string;
+  /** 補足（文明の起点年など） */
+  sub?: string;
   status: 'COMPLETE' | 'ARRIVED' | 'NEXT DESTINATION' | 'LOCKED';
   playable: boolean;
   /** 旅立てない時代をタップしたときの一言 */
@@ -34,6 +36,7 @@ export function Timeline({ nodes, onSelect }: Props) {
             <View style={{ flex: 1 }}>
               <Text style={styles.year}>{n.label}</Text>
               <Text style={[styles.title, !n.playable && styles.titleDim]}>{n.title}</Text>
+              {n.sub && <Text style={styles.sub}>{n.sub}</Text>}
               <Text style={[styles.status, n.status === 'NEXT DESTINATION' && styles.statusNext]}>{n.status}</Text>
               {teaser === n.id && <Text style={styles.teaser}>{n.teaser ?? 'COMING NEXT'}</Text>}
             </View>
@@ -60,6 +63,7 @@ const styles = StyleSheet.create({
   year: { fontFamily: F.latin, color: C.textDim, fontSize: 13, letterSpacing: 2 },
   title: { ...caps, fontSize: 24, letterSpacing: 6, color: '#f2dfb4', marginTop: 2 },
   titleDim: { color: C.textDim },
+  sub: { fontFamily: F.ja, color: C.textFaint, fontSize: 11, marginTop: 2 },
   status: { ...caps, fontSize: 10, letterSpacing: 4, color: C.gold, marginTop: 4 },
   statusNext: { color: '#9fb3e6' },
   teaser: { ...caps, fontSize: 12, letterSpacing: 5, color: C.sand, marginTop: 10 },

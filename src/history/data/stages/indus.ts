@@ -1,7 +1,7 @@
 import type { StageDefinition } from '@/history/stage/types';
 
 /**
- * STAGE 03 INDUS。
+ * STAGE INDUS。
  *
  * 舞台は最盛期のモヘンジョ・ダロ。焼きれんがの家並み、まっすぐな道路と下水道、高台の大浴場。
  * インダス文字は未解読で、王や人物の名は伝わっていない。中心人物は後世の研究者が
@@ -9,15 +9,15 @@ import type { StageDefinition } from '@/history/stage/types';
  */
 export const INDUS_STAGE: StageDefinition = {
   id: 'indus',
-  number: 3,
   title: 'INDUS',
   place: 'MOHENJO-DARO',
+  civilizationId: 'indus',
   eraLabel: 'c. 2300 BCE',
-  timelineYear: -2500,
-  timelineLabel: 'BC 2500',
+  visitYear: -2300,
+  timelineLabel: 'BC 2300',
   artKey: 'mohenjodaro',
   crossword: {
-    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（9×8, 交差 7）
+    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（スマートフォン向け 10×8, 交差 7）
     termIds: ['indus_civ', 'mohenjo', 'indus_script', 'brick', 'sewer', 'great_bath', 'seal', 'road'],
     seed: 2300,
     // 画面上部に MOHENJO-DARO と出ている。最初の 1 語は「今いる場所」から
@@ -44,5 +44,4 @@ export const INDUS_STAGE: StageDefinition = {
     unlockTermId: 'harappa',
     farewell: 'あなたは、この時代を離れます。',
   },
-  nextStage: { id: 'china', title: 'CHINA', timelineLabel: 'BC 1600' },
 };

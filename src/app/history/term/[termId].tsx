@@ -5,8 +5,9 @@ import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from
 import { ArchiveCard } from '@/components/history/ArchiveCard';
 import { Screen } from '@/components/history/Screen';
 import { C, F, caps } from '@/components/history/theme';
-import { connectionsOf, timeLinksOf } from '@/history/archive/linkResolver';
-import { HOME_STAGE_OF, STAGES_BY_ID, TERMS_BY_ID, wikipediaUrl } from '@/history/data';
+import { connectionsOf } from '@/history/archive/linkResolver';
+import { acrossTimeOf, relationBetween } from '@/history/archive/relations';
+import { HOME_STAGE_OF, RELATIONS, STAGES_BY_ID, TERMS_BY_ID, conceptLabel, wikipediaUrl } from '@/history/data';
 import { useHistory } from '@/history/store/HistoryProvider';
 
 /** DISCOVERY 詳細。Wikipedia は押した場合のみ外部で開く。 */
@@ -45,9 +46,12 @@ export default function TermScreen() {
                 isDiscovered={(id) => !!archive.entries[id]}
                 onOpenTerm={(id) => router.push(`/history/term/${id}`)}
                 onWikipedia={term.wikipediaTitle ? openWiki : undefined}
-                acrossTime={timeLinksOf(term.id, TERMS_BY_ID, HOME_STAGE_OF).map((t) => ({
-                  termId: t.id,
-                  era: STAGES_BY_ID[HOME_STAGE_OF[t.id]]?.title ?? '',
+                relationOf={(id) => relationBetween(term.id, id, RELATIONS)}
+                acrossTime={acrossTimeOf(term.id, TERMS_BY_ID, HOME_STAGE_OF, RELATIONS, conceptLabel).map((x) => ({
+                  termId: x.termId,
+                  era: STAGES_BY_ID[x.stageId]?.title ?? '',
+                  label: x.label,
+                  note: x.note,
                 }))}
               />
             );

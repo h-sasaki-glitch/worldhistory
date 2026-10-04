@@ -1,5 +1,8 @@
+import { sortByVisit } from '@/history/stage/chronology';
 import type { StageDefinition } from '@/history/stage/types';
 import type { HistoryTerm } from '@/history/types';
+
+import { CIVILIZATIONS, UPCOMING_STAGES } from './civilizations';
 
 import { CHINA_STAGE } from './stages/china';
 import { EGYPT_STAGE } from './stages/egypt';
@@ -18,9 +21,9 @@ import { ROME_TERMS } from './terms/rome';
 
 /** 遊べるステージの語彙（ARCHIVE に並ぶ範囲） */
 export const ALL_TERMS: HistoryTerm[] = [
-  ...MESOPOTAMIA_TERMS,
   ...EGYPT_TERMS,
   ...INDUS_TERMS,
+  ...MESOPOTAMIA_TERMS,
   ...CHINA_TERMS,
   ...GREECE_TERMS,
   ...QIN_TERMS,
@@ -31,16 +34,24 @@ export const TERMS_BY_ID: Record<string, HistoryTerm> = Object.fromEntries(
   ALL_TERMS.map((t) => [t.id, t]),
 );
 
-/** 遊べるステージ（時代順） */
-export const STAGES: StageDefinition[] = [
-  MESOPOTAMIA_STAGE,
+/**
+ * 遊べるステージ。並び順は visitYear（訪れる年）の昇順で決まる。
+ * 文明の起点年ではないので、BC 3500 に始まるメソポタミア文明でも
+ * ハンムラビ王の BC 1750 を訪れるステージは、BC 2570 のギザより後に来る。
+ */
+export const STAGES: StageDefinition[] = sortByVisit([
   EGYPT_STAGE,
   INDUS_STAGE,
+  MESOPOTAMIA_STAGE,
   CHINA_STAGE,
   GREECE_STAGE,
   QIN_STAGE,
   ROME_STAGE,
-];
+]);
+
+export { CIVILIZATIONS, UPCOMING_STAGES };
+export { CONCEPT_LABELS, conceptLabel } from './concepts';
+export { RELATIONS } from './relations';
 
 export const STAGES_BY_ID: Record<string, StageDefinition> = Object.fromEntries(
   STAGES.map((s) => [s.id, s]),

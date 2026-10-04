@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react
 
 import { hashString } from '@/history/crossword/random';
 import { buildLetterTiles, type AnswerCheck } from '@/history/input/answerInput';
+import { TILE_GAP, tileLayout } from '@/history/input/tileLayout';
 
 import { C, F } from '../theme';
 import { feedbackText } from './feedback';
@@ -16,12 +17,10 @@ type Props = {
   onPendingChange: (cells: (string | null)[]) => void;
 };
 
-const GAP = 5;
-const MAX_TILE = 40;
-
 /**
- * 「必要文字＋ダミー文字」の文字盤。1 行に収め、選んだ文字は盤面のマスに直接入る。
+ * 「必要文字＋ダミー文字」の文字盤。選んだ文字は盤面のマスに直接入る。
  * ソフトキーボードを開かないので、スマホでも盤面が隠れない。
+ * 長い語ではタイルを小さくせず、2 行に折り返す（tileLayout）。
  */
 export function TileAnswerInput({ termKey, answer, known, onSubmit, onPendingChange }: Props) {
   const tiles = useMemo(() => buildLetterTiles(answer, known, hashString(termKey)), [answer, known, termKey]);
@@ -56,19 +55,20 @@ export function TileAnswerInput({ termKey, answer, known, onSubmit, onPendingCha
   };
 
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
-  // 文字タイル＋「⌫」を 1 行に収める
-  const count = tiles.length + 1;
-  const size = width > 0 ? Math.min(MAX_TILE, Math.floor((width - GAP * (count - 1)) / count)) : 0;
+  // 文字タイル＋「⌫」。押しやすい大きさを保てなければ折り返す
+  const { size, perRow, height } = tileLayout(width, tiles.length + 1);
+  // 折り返したときも左端をそろえるため、行の幅を固定する
+  const rowWidth = perRow * size + TILE_GAP * (perRow - 1);
 
   return (
     <View onLayout={onLayout}>
       {size > 0 && (
-        <View style={styles.row}>
+        <View style={[styles.row, { width: rowWidth }]}>
           {tiles.map((ch, i) => (
             <Pressable
               key={i}
               onPress={() => tap(i)}
-              style={[styles.tile, { width: size, height: size + 4 }, picked.includes(i) && styles.tileUsed]}
+              style={[styles.tile, { width: size, height }, picked.includes(i) && styles.tileUsed]}
               accessibilityRole="button"
               accessibilityLabel={ch}
             >
@@ -80,7 +80,7 @@ export function TileAnswerInput({ termKey, answer, known, onSubmit, onPendingCha
               setPicked((p) => p.slice(0, -1));
               setMessage(null);
             }}
-            style={[styles.back, { width: size, height: size + 4 }]}
+            style={[styles.back, { width: size, height }]}
             accessibilityRole="button"
             accessibilityLabel="1文字消す"
           >
@@ -94,7 +94,7 @@ export function TileAnswerInput({ termKey, answer, known, onSubmit, onPendingCha
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: GAP },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: TILE_GAP },
   tile: {
     backgroundColor: C.clay,
     borderRadius: 4,

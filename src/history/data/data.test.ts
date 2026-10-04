@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { conceptIndex, relatedIds, timeLinksOf } from '@/history/archive/linkResolver';
-import { generateBoard } from '@/history/crossword/generator';
 import { isCrosswordAnswer, normalizeAnswer, toCells } from '@/history/crossword/normalizeJapanese';
 import { validateBoard } from '@/history/crossword/validator';
+import { buildStageBoards } from '@/history/stage/stageBoards';
 
 import { DRAFT_STAGES, HOME_STAGE_OF, LIBRARY_BY_ID, LIBRARY_TERMS, STAGES } from './index';
 
@@ -66,11 +66,24 @@ describe.each(ALL_STAGES.map((s) => [s.id, s] as const))('ステージ定義 %s'
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('全語が 1 枚の盤面に収まり、盤面として成立する', () => {
-    const words = stage.crossword.termIds.map((id) => ({ id, cells: toCells(LIBRARY_BY_ID[id].crosswordAnswer) }));
-    const { board, unplaced } = generateBoard(words, { seed: stage.crossword.seed });
-    expect(unplaced).toEqual([]);
-    expect(validateBoard(board, { maxGridSize: 15 })).toEqual([]);
+  it('全語が盤面に収まり、どの盤面もクロスワードとして成立する', () => {
+    const sb = buildStageBoards(stage, LIBRARY_BY_ID);
+    expect(sb.unplaced).toEqual([]);
+    for (const board of sb.boards) expect(validateBoard(board, { maxGridSize: 12 })).toEqual([]);
+    const placed = sb.boards.flatMap((b) => b.placements.map((p) => p.id)).sort();
+    expect(placed).toEqual([...stage.crossword.termIds].sort());
+  });
+
+  it('盤面の分け方（boards）を指定する場合、語の過不足がない', () => {
+    const groups = stage.crossword.boards;
+    if (!groups) return;
+    const ids = groups.flatMap((g) => g.termIds);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect([...ids].sort()).toEqual([...stage.crossword.termIds].sort());
+    for (const g of groups) expect(g.label.length).toBeGreaterThan(0);
+    // 指定した分け方どおりに盤面ができる
+    const sb = buildStageBoards(stage, LIBRARY_BY_ID);
+    groups.forEach((g, i) => expect(sb.boards[i].placements.map((p) => p.id).sort()).toEqual([...g.termIds].sort()));
   });
 });
 
@@ -83,7 +96,7 @@ describe('TIME LINK（時代をまたぐ概念）', () => {
   });
 
   it('四大文明の文字がつながる: くさび形文字・象形文字・インダス文字・甲骨文字', () => {
-    expect(links('cuneiform')).toEqual(['hieroglyph', 'indus_script', 'oracle']);
+    expect(links('cuneiform')).toEqual(['hieroglyph', 'indus_script', 'kanji', 'oracle']);
     expect(links('oracle')).toEqual(['cuneiform', 'hieroglyph', 'indus_script']);
   });
 
@@ -118,5 +131,29 @@ describe('TIME LINK（時代をまたぐ概念）', () => {
   it('概念索引に四大文明の文字が並ぶ', () => {
     const idx = conceptIndex(LIBRARY_BY_ID, HOME_STAGE_OF);
     expect(new Set(idx.WRITING_SYSTEM.map((x) => x.stageId))).toEqual(new Set(['mesopotamia', 'egypt', 'indus', 'china']));
+  });
+});
+
+describe('秦の「法律」と「法家」', () => {
+  it('秦の語は「法家」（思想）。一般名詞の「法律」ではない', () => {
+    const t = LIBRARY_BY_ID.legalism;
+    expect(t.display).toBe('法家');
+    expect(t.crosswordAnswer).toBe('ホウカ');
+    expect(t.wikipediaTitle).toBe('法家');
+    expect(LIBRARY_TERMS.some((x) => x.display === '法律')).toBe(false);
+    expect(LIBRARY_BY_ID.law).toBeUndefined();
+  });
+
+  it('法家 → 秦 → 始皇帝 がつながり、秦のクロスワードに入る', () => {
+    expect(relatedIds('legalism', LIBRARY_BY_ID)).toEqual(expect.arrayContaining(['qin', 'shihuang']));
+    expect(STAGES.find((s) => s.id === 'qin')!.crossword.termIds).toContain('legalism');
+  });
+
+  it('表示名・解答・Wikipedia 記事が同じものを指す（表示名が記事名の一部か、記事名が表示名の一部）', () => {
+    // 記事が個別にない語（大浴場・印章など）は、その語を扱う上位の記事を指してよい。ここでは秦の語だけ厳密に確認する
+    for (const t of LIBRARY_TERMS.filter((x) => HOME_STAGE_OF[x.id] === 'qin')) {
+      if (!t.wikipediaTitle || ['coin', 'xianyang'].includes(t.id)) continue;
+      expect(t.wikipediaTitle, t.id).toBe(t.display);
+    }
   });
 });

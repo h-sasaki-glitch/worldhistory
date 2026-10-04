@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/history/Screen';
 import { C, F, caps } from '@/components/history/theme';
 import { STAGES } from '@/history/data';
+import { stageNumberOf } from '@/history/stage/chronology';
 import { currentStop, journey } from '@/history/stage/journey';
 import { useHistory } from '@/history/store/HistoryProvider';
 
@@ -29,7 +30,7 @@ export default function TitleScreen() {
         </View>
 
         <View style={styles.stageBox}>
-          <Text style={styles.stageNo}>STAGE {String(stage.number).padStart(2, '0')}</Text>
+          <Text style={styles.stageNo}>STAGE {String(stageNumberOf(STAGES, stage.id)).padStart(2, '0')}</Text>
           <Text style={styles.stageTitle}>{stage.title}</Text>
           <Text style={styles.stageEra}>
             {stage.place} ・ {stage.eraLabel}

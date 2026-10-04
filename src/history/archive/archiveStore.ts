@@ -44,6 +44,33 @@ export function addDiscovery(
   };
 }
 
+/**
+ * 保存データを現在の語彙に合わせる。
+ * 語彙の見直しで廃止した語（例: 秦の「法律」→「法家」に差し替え）の記録と、それに触れる LINK を取り除く。
+ * 残った語どうしの LINK は、現在の関連（relatedTermIds）に合うものだけ残す。
+ */
+export function sanitizeArchive(archive: ArchiveState, termsById: Record<string, HistoryTerm>): ArchiveState {
+  const entries = Object.fromEntries(Object.entries(archive.entries).filter(([id]) => termsById[id]));
+  const links = Object.fromEntries(
+    Object.entries(archive.links).filter(([key]) => {
+      const [a, b] = key.split('|');
+      if (!entries[a] || !entries[b]) return false;
+      return termsById[a].relatedTermIds.includes(b) || termsById[b].relatedTermIds.includes(a);
+    }),
+  );
+  // 現在の関連で、両方とも発見済みなのに未解放の LINK があれば解放する（関連を追加した場合）
+  for (const a of Object.keys(entries)) {
+    for (const key of linksUnlockedBy(a, { ...archive, entries, links }, termsById)) {
+      const [x, y] = key.split('|');
+      if (entries[x] && entries[y] && !links[key]) {
+        const later = entries[x].discoveredAt > entries[y].discoveredAt ? entries[x] : entries[y];
+        links[key] = { stageId: later.stageId, foundAt: later.discoveredAt };
+      }
+    }
+  }
+  return { ...archive, entries, links };
+}
+
 export function isDiscovered(archive: ArchiveState, termId: string): boolean {
   return !!archive.entries[termId];
 }

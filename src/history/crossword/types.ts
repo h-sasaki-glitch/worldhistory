@@ -31,6 +31,10 @@ export type GeneratorOptions = {
   seed: number;
   /** 生成する候補盤面の数 */
   attempts: number;
+  /** 短辺の上限（省略時は maxGridSize）。スマートフォンでマスを小さくしないための制約 */
+  maxShortSide?: number;
+  /** true なら縦長の盤面を転置して横長にそろえる */
+  landscape?: boolean;
 };
 
 export const DEFAULT_GENERATOR_OPTIONS: GeneratorOptions = {

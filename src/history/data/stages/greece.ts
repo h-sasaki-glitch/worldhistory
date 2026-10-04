@@ -1,7 +1,7 @@
 import type { StageDefinition } from '@/history/stage/types';
 
 /**
- * STAGE 05 GREECE。
+ * STAGE GREECE。
  *
  * 舞台はペリクレスの時代のアテネ（c. 440 BCE）。アクロポリスの丘では
  * パルテノン神殿の建設が進んでいる（完成は紀元前432年ごろ）。
@@ -9,15 +9,15 @@ import type { StageDefinition } from '@/history/stage/types';
  */
 export const GREECE_STAGE: StageDefinition = {
   id: 'greece',
-  number: 5,
   title: 'GREECE',
   place: 'ATHENS',
+  civilizationId: 'greece',
   eraLabel: 'c. 440 BCE',
-  timelineYear: -800,
-  timelineLabel: 'BC 800',
+  visitYear: -440,
+  timelineLabel: 'BC 440',
   artKey: 'athens',
   crossword: {
-    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（10×7, 交差 7）
+    // 中学（高校受験）レベルの語から、1 枚の盤面に収まる組み合わせを総当たりで選定（スマートフォン向け 10×7, 交差 7）
     termIds: ['polis', 'athens', 'democracy', 'parthenon', 'sparta', 'philosophy', 'socrates', 'citizen'],
     seed: 440,
     firstTermId: 'athens',
@@ -42,5 +42,4 @@ export const GREECE_STAGE: StageDefinition = {
     unlockTermId: 'olympics',
     farewell: 'あなたは、この時代を離れます。',
   },
-  nextStage: { id: 'qin', title: 'QIN', timelineLabel: 'BC 221' },
 };

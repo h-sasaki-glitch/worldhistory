@@ -1,7 +1,7 @@
 import type { HistoryTerm } from '@/history/types';
 
 /**
- * STAGE 06 QIN の歴史語彙（秦の都・咸陽, c. 210 BCE, 始皇帝の晩年）。
+ * STAGE QIN の歴史語彙（秦の都・咸陽, c. 210 BCE, 始皇帝の晩年）。
  * 対象: 中学生（高校受験レベル）。
  */
 export const QIN_TERMS: HistoryTerm[] = [
@@ -23,8 +23,8 @@ export const QIN_TERMS: HistoryTerm[] = [
     },
     discoverNote: '英語の China のもとになったともいわれます。',
     summary:
-      '紀元前221年に中国を初めて統一した王朝。法律による厳しい政治を行ったが、わずか15年ほどでほろびた。',
-    relatedTermIds: ['shihuang', 'law', 'wall', 'xianyang'],
+      '紀元前221年に中国を初めて統一した王朝。法家の考えにもとづく、法と刑罰による厳しい政治を行ったが、わずか15年ほどでほろびた。',
+    relatedTermIds: ['shihuang', 'legalism', 'wall', 'xianyang'],
     wikipediaTitle: '秦',
   },
   {
@@ -124,6 +124,7 @@ export const QIN_TERMS: HistoryTerm[] = [
     summary:
       '孔子の教えをもとにした考え方。思いやり（仁）や礼儀を重んじる。秦では弾圧されたが、のちの漢では国の教えとなった。',
     relatedTermIds: ['shihuang'],
+    conceptId: 'THOUGHT',
     wikipediaTitle: '儒教',
   },
   {
@@ -143,27 +144,32 @@ export const QIN_TERMS: HistoryTerm[] = [
     summary:
       '秦の王が初めて名のった、王よりも上の位の呼び名。中国では1912年に清がほろびるまで、2000年以上使われた。',
     relatedTermIds: ['shihuang', 'qin'],
-    conceptId: 'EMPEROR',
+    conceptId: 'IMPERIAL_RULE',
     wikipediaTitle: '皇帝',
   },
   {
-    id: 'law',
-    display: '法律',
-    reading: 'ほうりつ',
-    crosswordAnswer: 'ホウリツ',
-    nameEn: 'LAW',
+    // 旧 'law'（法律）。「法律」は一般名詞で、秦の時代を表す用語ではない。
+    // 秦の統治を支えた思想としての「法家」を扱う（法家 → 法による統治 → 秦 → 始皇帝）。
+    id: 'legalism',
+    display: '法家',
+    reading: 'ほうか',
+    crosswordAnswer: 'ホウカ',
+    nameEn: 'LEGALISM',
     category: 'IDEA',
+    periodFrom: -400,
+    periodTo: -206,
+    eraLabel: 'c. 4th – 3rd century BCE',
     region: '中国',
     examRank: 'A',
     clues: {
-      easy: 'みんなが守るきまり。',
-      normal: '秦が国を治めるために重んじた、人々が守るべききまり。',
+      easy: '法と刑罰で国を治めよと説いた思想。',
+      normal: '「法と刑罰で国を治めるべきだ」と説いた思想家たち。秦はこの考えで強くなった。',
     },
-    discoverNote: 'きまりを破った者は、身分に関係なく厳しく罰しました。',
+    discoverNote: '始皇帝は、この考えをもつ李斯を重く用いました。',
     summary:
-      '人々が守るべききまり。秦は法律を細かく定め、破った者は身分に関係なく厳しく罰する政治で国をまとめた。',
-    relatedTermIds: ['qin'],
-    conceptId: 'LAW_CODE',
+      '法と刑罰によって国を治めるべきだと説いた思想。秦はこの考えで改革を進めて強国となり、始皇帝も法による統治で中国をまとめた。',
+    relatedTermIds: ['qin', 'shihuang', 'confucian'],
+    conceptId: 'THOUGHT',
     wikipediaTitle: '法家',
   },
   {
